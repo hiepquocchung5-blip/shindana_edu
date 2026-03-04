@@ -2,6 +2,7 @@
 // auth/login.php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/functions.php';
+require_once __DIR__ . '/../config/settings.php'; 
 
 // Enforce Security Headers
 set_security_headers();
