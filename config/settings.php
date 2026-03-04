@@ -10,7 +10,7 @@ define('APP_CURRENCY', 'MMK');
 define('ORG_NAME', 'Shinedana Global Education Co., Ltd.');
 define('ORG_ADDRESS', 'Kamayut HQ, Yangon, Myanmar');
 define('ORG_PHONE', '+95 9 123 456 789');
-define('ORG_EMAIL', 'admissions@Shinedana.edu.mm');
+define('ORG_EMAIL', 'admissions@shinedana.edu.mm');
 
 // 3. System Defaults
 define('DEFAULT_TIMEZONE', 'Asia/Yangon');

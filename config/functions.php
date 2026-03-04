@@ -3,9 +3,9 @@
 // Core Helper Functions for Sheindana.edu
 
 // 1. Load Global Settings
-// Ensure settings.php exists before requiring
-if (file_exists(__DIR__ . '/settings.php')) {
-    require_once __DIR__ . '/settings.php';
+// Start session on every page load
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
 // 2. Auto-Detect Base URL
@@ -80,6 +80,29 @@ function redirect($path) {
 // =================================================================
 // 4. SECURITY & AUTH HELPER FUNCTIONS
 // =================================================================
+
+// NEW: Advanced Security Headers Middleware
+function set_security_headers() {
+    header("X-Frame-Options: SAMEORIGIN"); // Prevent Clickjacking
+    header("X-XSS-Protection: 1; mode=block"); // Cross-Site Scripting filter
+    header("X-Content-Type-Options: nosniff"); // Prevent MIME-sniffing
+    header("Strict-Transport-Security: max-age=31536000; includeSubDomains"); // HSTS
+}
+
+// NEW: Generate CSRF Token
+function csrf_token() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+// NEW: Verify CSRF Token
+function verify_csrf($token) {
+    if (!isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+        die("Security Validation Failed: Invalid CSRF Token.");
+    }
+}
 
 // Ensure user is logged in
 function requireLogin() {
