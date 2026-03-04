@@ -2,9 +2,9 @@
 // config/db.php
 
 $host = 'localhost';
-$db   = 'sheindana_db';
-$user = 'root';      // Default XAMPP user
-$pass = 'Stephan2k03';          // Default XAMPP password (leave empty)
+$db   = 'shinwnqd_newwebsitesheindanadb';
+$user = 'shinwnqd_newwebsitesheindana';      // Default XAMPP user
+$pass = 'enV?5&F7Bh&L';          // Default XAMPP password (leave empty)
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
