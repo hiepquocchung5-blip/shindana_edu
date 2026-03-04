@@ -17,6 +17,6 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // 4. Redirect to Login
-header("Location: login.php");
+header("Location: /index.php?route=auth/login&msg=" . urlencode("Logged out successfully."));
 exit();
 ?>
