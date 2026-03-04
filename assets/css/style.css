@@ -1,0 +1,181 @@
+/* assets/css/style.css */
+
+/* =========================================
+   1. GLOBAL RESETS & TYPOGRAPHY
+   ========================================= */
+:root {
+    --gold: #D4AF37;
+    --gold-light: #F4E5B0;
+    --slate-900: #0f172a;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans Myanmar', sans-serif;
+    background-color: #f8fafc;
+    overflow-x: hidden; /* Prevent horizontal scroll on mobile body */
+}
+
+/* Fluid Typography: Scales smoothly between 320px and 1200px viewports */
+h1 { font-size: clamp(1.75rem, 5vw, 3.75rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.25rem, 3vw, 2.25rem); }
+
+/* =========================================
+   2. RESPONSIVE UTILITIES
+   ========================================= */
+.text-gradient-gold {
+    background: linear-gradient(to right, #D4AF37, #FCD34D);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-pattern {
+    background-color: #0f172a;
+    background-image: radial-gradient(#D4AF37 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+}
+
+/* Focus Rings for Inputs */
+.focus-ring-gold:focus {
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    border-color: #D4AF37;
+}
+
+/* =========================================
+   3. GOOGLE TRANSLATE CUSTOMIZATION
+   ========================================= */
+.goog-te-banner-frame {
+    display: none !important;
+}
+body {
+    top: 0 !important;
+}
+
+.goog-te-gadget-simple {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    padding: 8px 12px !important;
+    border-radius: 9999px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    transition: all 0.3s ease;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.goog-te-gadget-simple:hover {
+    border-color: #D4AF37 !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.goog-te-gadget-simple span {
+    color: #475569 !important; /* Slate-600 */
+    font-weight: 700 !important;
+    font-size: 0.75rem !important; /* text-xs */
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Hide Google Branding Icons */
+.goog-te-gadget-simple img, .goog-te-gadget-icon {
+    display: none !important;
+}
+
+/* Mobile Adjustment for Translate Widget */
+@media (max-width: 768px) {
+    .goog-te-gadget-simple {
+        padding: 6px 10px !important;
+    }
+}
+
+/* =========================================
+   4. DATA TABLES (MOBILE OPTIMIZED)
+   ========================================= */
+/* Custom Scrollbar for horizontal scrolling tables */
+.overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+}
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Ensure table cells don't wrap awkwardly on small screens */
+table td {
+    white-space: nowrap;
+}
+
+/* =========================================
+   5. MODAL HANDLING
+   ========================================= */
+/* Ensure modals scroll on small mobile screens (landscape etc) */
+[x-show="showCreate"], [x-show="showEdit"], [x-show="showModal"] {
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Constrain modal height on mobile to allow scrolling inside */
+@media (max-height: 800px) {
+    .modal-content {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+}
+
+/* =========================================
+   6. PRINT STYLES (INVOICES)
+   ========================================= */
+@media print {
+    /* Reset Page */
+    @page { margin: 0; }
+    body { 
+        background-color: white !important; 
+        color: black !important; 
+        padding: 20px;
+    }
+    
+    /* Hide UI Elements */
+    nav, footer, .no-print, button, a[href^="javascript"] {
+        display: none !important;
+    }
+
+    /* Reset Container Styles for Paper */
+    .shadow-xl, .shadow-2xl, .shadow-lg {
+        box-shadow: none !important;
+        border: none !important;
+    }
+    
+    .bg-slate-50, .bg-white {
+        background-color: white !important;
+    }
+
+    /* Typography Adjustments */
+    .text-slate-400 {
+        color: #64748b !important; /* Make gray text darker for legibility */
+    }
+    
+    /* Ensure Colors Print (Chrome/Safari requirement) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    /* Invoice Specific */
+    .print-container {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
