@@ -6,7 +6,7 @@
 // We use __DIR__ to ensure we are looking relative to the root index.php
 $db_file = __DIR__ . '/config/db.php';
 $fn_file = __DIR__ . '/config/functions.php';
-require_once __DIR__ . '/../config/settings.php'; 
+require_once __DIR__ . '/config/settings.php'; 
 
 
 // Ensure config files exist before loading
