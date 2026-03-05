@@ -1,4 +1,4 @@
-/sheindana_edu
+/Shinedana_edu
 ├── /assets                 # Publicly accessible assets
 │   ├── /css
 │   │   └── tailwind.css    # (Or CDN link in head)

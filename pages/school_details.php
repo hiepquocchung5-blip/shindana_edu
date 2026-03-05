@@ -185,7 +185,7 @@ require_once '../includes/header.php';
                         <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-[#E5B822] text-slate-900 font-black text-sm shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">1</div>
                         <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border border-slate-100 bg-slate-50 shadow-sm">
                             <h4 class="font-bold text-slate-900">Initial Consultation</h4>
-                            <p class="text-xs text-slate-500 mt-1">Speak with a Sheindana agent to verify eligibility.</p>
+                            <p class="text-xs text-slate-500 mt-1">Speak with a Shinedana agent to verify eligibility.</p>
                         </div>
                     </li>
                     <li class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">

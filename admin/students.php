@@ -59,7 +59,7 @@ $students = $stmt->fetchAll();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student Applications | Sheindana</title>
+    <title>Student Applications | Shinedana</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">

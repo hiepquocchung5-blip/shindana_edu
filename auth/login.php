@@ -47,7 +47,7 @@ if (isset($_SESSION['user_id'])) {
 
             <div class="relative z-10 flex items-center gap-3">
                 <div class="w-10 h-10 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20 text-gold font-black text-sm">SD</div>
-                <div class="font-black tracking-tight text-lg uppercase">Sheindana<span class="text-gold">.edu</span></div>
+                <div class="font-black tracking-tight text-lg uppercase">Shinedana<span class="text-gold">.edu</span></div>
             </div>
 
             <div class="relative z-10 my-12">

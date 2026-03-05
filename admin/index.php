@@ -25,7 +25,7 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Console | Sheindana</title>
+    <title>Admin Console | Shinedana</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@ try {
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 text-[#D4AF37] font-black text-sm">SD</div>
                 <div>
-                    <div class="font-black text-xl uppercase tracking-tighter leading-none">Sheindana<span class="text-[#D4AF37]">.Admin</span></div>
+                    <div class="font-black text-xl uppercase tracking-tighter leading-none">Shinedana<span class="text-[#D4AF37]">.Admin</span></div>
                     <span class="text-[9px] font-bold uppercase text-white/50 tracking-widest">
                         Role: <?= htmlspecialchars($_SESSION['role'] ?? 'Super Admin') ?>
                     </span>

@@ -1,6 +1,6 @@
 -- 1. Create Database
-CREATE DATABASE IF NOT EXISTS sheindana_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE sheindana_db;
+CREATE DATABASE IF NOT EXISTS Shinedana_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE Shinedana_db;
 
 -- 2. Branches (The 5 Yangon Centers)
 CREATE TABLE branches (

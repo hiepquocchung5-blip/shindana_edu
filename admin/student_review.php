@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
         if ($old_status !== $new_status) {
             $to = $info['agent_email'];
             $subject = "Update: Application Status for " . $info['full_name'];
-            $message = "Dear " . $info['agent_name'] . ",\n\nThe application status for your student, " . $info['full_name'] . ", has been updated to: " . strtoupper($new_status) . ".\n\nPlease log in to the Agent Portal for more details.\n\nRegards,\nSheindana Administration";
+            $message = "Dear " . $info['agent_name'] . ",\n\nThe application status for your student, " . $info['full_name'] . ", has been updated to: " . strtoupper($new_status) . ".\n\nPlease log in to the Agent Portal for more details.\n\nRegards,\nShinedana Administration";
             $headers = "From: " . ORG_EMAIL . "\r\n" .
                        "Reply-To: " . ORG_EMAIL . "\r\n" .
                        "X-Mailer: PHP/" . phpversion();
@@ -86,7 +86,7 @@ if (!$student) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Review: <?= h($student['full_name']) ?> | Sheindana</title>
+    <title>Review: <?= h($student['full_name']) ?> | Shinedana</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">

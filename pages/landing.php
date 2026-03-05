@@ -1,6 +1,6 @@
 <?php 
 // pages/landing.php
-// Main Entry Point for Sheindana.edu
+// Main Entry Point for Shinedana.com
 
 require_once '../config/db.php'; 
 require_once '../config/functions.php';

@@ -90,7 +90,7 @@ $students = $stmt_st->fetchAll();
                     <span class="text-white font-black text-xs">SD</span>
                 </div>
                 <div class="leading-tight">
-                    <span class="block font-black uppercase text-slate-900 tracking-tight text-sm">Sheindana<span class="text-[#D4AF37]">.Partner</span></span>
+                    <span class="block font-black uppercase text-slate-900 tracking-tight text-sm">Shinedana<span class="text-[#D4AF37]">.Partner</span></span>
                     <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Agent Portal</span>
                 </div>
             </div>

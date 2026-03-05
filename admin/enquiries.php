@@ -19,7 +19,7 @@ $enquiries = $pdo->query("SELECT * FROM enquiries ORDER BY created_at DESC")->fe
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Enquiry Leads | Sheindana</title>
+    <title>Enquiry Leads | Shinedana</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">

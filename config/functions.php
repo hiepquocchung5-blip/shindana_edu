@@ -1,6 +1,6 @@
 <?php
 // config/functions.php
-// Core Helper Functions for Sheindana.edu
+// Core Helper Functions for Shinedana.com
 
 // 1. Load Global Settings
 // Start session on every page load
@@ -28,7 +28,7 @@ if (!defined('BASE_URL')) {
 // 3. ROUTING HELPER FUNCTIONS
 // =================================================================
 
-// Returns the absolute base path (e.g., http://localhost/sheindana/)
+// Returns the absolute base path (e.g., http://localhost/Shinedana/)
 function base_url($path = '') {
     return BASE_URL . ltrim($path, '/');
 }
