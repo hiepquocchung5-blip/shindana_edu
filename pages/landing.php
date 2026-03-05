@@ -1,358 +1,375 @@
 <?php 
 // pages/landing.php
-// This file is loaded by index.php via the Router
-// Current working directory is /pages due to router logic
+// Main Entry Point for Sheindana.edu
 
 require_once '../config/db.php'; 
 require_once '../config/functions.php';
 
-try {
-    // 1. Fetch Yangon Branches (Active Only)
-    $stmt_branches = $pdo->query("SELECT * FROM branches WHERE is_active = 1");
-    $branches = $stmt_branches->fetchAll();
+// 1. Safe Database Fetching (Crash-Proof Architecture)
+$branches = [];
+$programs = [];
+$featured_schools = [];
 
-    // 2. Fetch Academic Programs (Classes)
-    // We GROUP BY class_name to show unique programs. 
-    $stmt_programs = $pdo->query("SELECT class_name, MAX(description) as description, MAX(duration_text) as duration_text, MAX(icon) as icon FROM class_divisions WHERE status = 'active' GROUP BY class_name");
-    $programs = $stmt_programs->fetchAll();
-} catch (PDOException $e) {
-    // Silent fail for UI
-    $branches = [];
-    $programs = [];
+try {
+    // Fetch all branches safely and filter in PHP to avoid 'is_active' vs 'status' SQL column errors
+    $stmt_branches = $pdo->query("SELECT * FROM branches");
+    $raw_branches = $stmt_branches->fetchAll();
+    
+    $branches = array_filter($raw_branches, function($b) {
+        if (isset($b['is_active'])) return $b['is_active'] == 1;
+        if (isset($b['status'])) return $b['status'] === 'active';
+        return true; // Fallback if neither column exists
+    });
+} catch (PDOException $e) { 
+    error_log("Branches query failed: " . $e->getMessage()); 
 }
 
-// Include Header (Adjusted path for 'pages' folder)
+try {
+    // Wrapped non-grouped columns in MAX() to satisfy ONLY_FULL_GROUP_BY strict mode
+    $stmt_programs = $pdo->query("
+        SELECT 
+            class_name, 
+            MAX(academic_year) as academic_year,
+            MAX(shift) as shift,
+            MAX(description) as description,
+            MAX(duration_text) as duration_text,
+            MAX(icon) as icon
+        FROM class_divisions 
+        WHERE status = 'active' 
+        GROUP BY class_name
+    ");
+    $programs = $stmt_programs->fetchAll();
+} catch (PDOException $e) { 
+    error_log("Programs query failed: " . $e->getMessage()); 
+}
+
+try {
+    // Fetch top 3 featured schools for the landing page showcase
+    $stmt_schools = $pdo->query("
+        SELECT id, school_name, region, type, city 
+        FROM japan_schools 
+        ORDER BY created_at DESC 
+        LIMIT 3
+    ");
+    $featured_schools = $stmt_schools->fetchAll();
+} catch (PDOException $e) {
+    error_log("Schools showcase query failed: " . $e->getMessage());
+}
+
+// Include Header (brings in our --brand-gold and --brand-red variables)
 require_once '../includes/header.php';
 ?>
 
-<!-- Hero Section -->
-<header class="hero-pattern min-h-[90vh] flex items-center relative px-6 lg:px-12 overflow-hidden pt-20">
-    <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-16 relative z-10 items-center">
-        <div class="space-y-8 animate-in fade-in zoom-in duration-700">
-            <div class="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-6 py-3 rounded-full backdrop-blur-md">
-                <span class="text-gold text-[10px] font-black uppercase tracking-[0.2em]">Verified Education Partner</span>
+<!-- Custom CSS for Landing Page Specifics (Scrollbars) -->
+<style>
+    /* Sleek terminal scrollbar for the branches list */
+    .terminal-scroll::-webkit-scrollbar { width: 4px; }
+    .terminal-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; }
+    .terminal-scroll::-webkit-scrollbar-thumb { background: var(--brand-gold); border-radius: 4px; }
+    
+    /* Smooth scroll behavior for the entire page */
+    html { scroll-behavior: smooth; }
+</style>
+
+<!-- Hero Section (Immersive Dark Tech / Circuit UI) -->
+<section class="bg-slate-900 min-h-[90vh] flex items-center relative px-6 lg:px-12 overflow-hidden -mt-[72px] md:-mt-[104px] pt-[72px] md:pt-[104px]">
+    <!-- Abstract Background Elements -->
+    <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(var(--brand-gold) 1px, transparent 1px); background-size: 40px 40px;"></div>
+    <div class="absolute top-[-10%] right-[-5%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-[--brand-red] rounded-full blur-[120px] md:blur-[180px] opacity-20 pointer-events-none mix-blend-screen"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] md:w-[700px] md:h-[700px] bg-[--brand-gold] rounded-full blur-[120px] md:blur-[180px] opacity-10 pointer-events-none mix-blend-screen"></div>
+
+    <div class="max-w-[1600px] mx-auto w-full grid lg:grid-cols-2 gap-10 lg:gap-16 relative z-10 items-center py-12 md:py-20">
+        
+        <!-- Hero Content -->
+        <div class="space-y-6 md:space-y-10 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+            <div class="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-5 py-2.5 rounded-full backdrop-blur-md shadow-lg">
+                <span class="text-[--brand-gold] text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[--brand-red] animate-pulse"></span> Verified Partner
+                </span>
                 <div class="h-4 w-px bg-white/20"></div>
-                <span class="text-white/60 text-[10px] font-bold">Yangon <i class="fa-solid fa-arrow-right mx-1 text-gold"></i> Japan</span>
+                <span class="text-white/80 text-[10px] font-bold uppercase tracking-widest">Yangon <i class="fa-solid fa-arrow-right mx-1 text-[--brand-red]"></i> Japan</span>
             </div>
             
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] tracking-tight">
-                Future <br>
-                <span class="text-gradient-gold">Focused.</span>
+            <h1 class="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-white leading-[1.1] md:leading-[0.95] tracking-tighter">
+                Accelerate <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-gold] via-[#FFF] to-[--brand-red]">Your Future.</span>
             </h1>
             
-            <p class="text-slate-400 text-lg max-w-lg leading-relaxed font-light">
-                The centralized ecosystem for Myanmar's top 5 Academic Centers. Direct integration with Japan's premium institutions.
+            <p class="text-slate-400 text-sm md:text-lg max-w-xl leading-relaxed font-medium">
+                Myanmar's premier Japanese education ecosystem. Master the language locally, and seamlessly transition to our verified, top-tier partner institutions across Tokyo, Osaka, and beyond.
             </p>
 
-            <div class="flex flex-wrap gap-4">
-                <a href="#programs" class="bg-gold text-slate-900 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-shadow">
-                    Explore Classes
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-5 pt-2 md:pt-4">
+                <a href="#programs" class="w-full sm:w-auto bg-[--brand-gold] text-slate-900 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white hover:shadow-[0_0_40px_rgba(229,184,34,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1">
+                    Explore Programs <i class="fa-solid fa-arrow-down"></i>
                 </a>
-                <a href="#finder" class="bg-white/5 text-white border border-white/10 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-colors">
-                    Pacific Finder
+                <a href="<?= route('pages/schools') ?>" class="w-full sm:w-auto bg-white/5 text-white border border-white/10 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[--brand-red] hover:border-[--brand-red] hover:shadow-[0_0_40px_rgba(217,33,40,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1 backdrop-blur-sm">
+                    Pacific Finder <i class="fa-solid fa-magnifying-glass"></i>
                 </a>
             </div>
         </div>
 
-        <!-- Hero Stats -->
-        <div class="hidden lg:block relative">
-            <div class="absolute -inset-1 bg-gradient-to-r from-gold to-yellow-600 rounded-[40px] blur opacity-25"></div>
-            <div class="bg-slate-900/80 backdrop-blur-xl p-10 rounded-[40px] border border-white/10 relative">
-                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Network Status</h3>
-                <div class="space-y-4">
+        <!-- Hero Dynamic Status Card (Fully Responsive & Scrollable on Mobile) -->
+        <div class="relative group mt-8 lg:mt-0 w-full" id="branches">
+            <div class="absolute -inset-1 bg-gradient-to-r from-[--brand-red] to-[--brand-gold] rounded-[32px] md:rounded-[40px] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+            <div class="bg-slate-900/80 backdrop-blur-xl p-6 md:p-10 rounded-[32px] md:rounded-[40px] border border-white/10 relative shadow-2xl transform lg:rotate-1 lg:hover:rotate-0 transition-transform duration-500">
+                
+                <div class="absolute -top-4 -right-4 md:-top-6 md:-right-6 bg-[--brand-red] text-white w-16 h-16 md:w-20 md:h-20 rounded-full flex flex-col items-center justify-center shadow-[0_0_30px_rgba(217,33,40,0.6)] transform rotate-12 z-20 border-4 border-slate-900">
+                    <span class="text-xl md:text-2xl font-black leading-none"><?= count($branches) > 0 ? count($branches) : 0 ?></span>
+                    <span class="text-[7px] md:text-[8px] font-black uppercase tracking-widest">Centers</span>
+                </div>
+                
+                <h3 class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 md:mb-8 flex items-center gap-2">
+                    <i class="fa-solid fa-server text-[--brand-gold]"></i> Network Status
+                </h3>
+                
+                <!-- Scrollable Terminal View -->
+                <div class="space-y-3 md:space-y-4 max-h-[280px] md:max-h-[360px] overflow-y-auto terminal-scroll pr-2">
                     <?php if(isset($branches) && count($branches) > 0): ?>
                         <?php foreach($branches as $branch): ?>
-                        <!-- Linked Branch Card -->
-                        <a href="<?= base_url('index.php?route=pages/branch_details&id=' . $branch['id']) ?>" class="block">
-                            <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-gold/50 hover:bg-white/10 transition duration-300 group cursor-pointer">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-                                    <div>
-                                        <div class="font-bold text-sm text-white group-hover:text-gold transition"><?= h($branch['name']) ?></div>
-                                        <div class="text-[10px] text-slate-500 font-bold uppercase"><?= h($branch['code']) ?> • Active</div>
-                                    </div>
+                        <!-- Anchor Tag: Fully clickable, touch-friendly -->
+                        <a href="<?= route('pages/branch_details&id=' . ($branch['id'] ?? '')) ?>" class="flex items-center justify-between p-3 md:p-4 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 hover:border-[--brand-gold]/50 hover:bg-white/10 active:bg-white/20 transition-all duration-300 group/item cursor-pointer">
+                            <div class="flex items-center gap-3 md:gap-4">
+                                <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-slate-800 flex items-center justify-center text-[--brand-gold] text-sm md:text-base group-hover/item:text-slate-900 group-hover/item:bg-[--brand-gold] transition-colors shadow-inner shrink-0">
+                                    <i class="fa-solid fa-building"></i>
                                 </div>
-                                <i class="fa-solid fa-chevron-right text-slate-600 text-xs group-hover:text-gold transition"></i>
+                                <div class="overflow-hidden">
+                                    <div class="font-bold text-xs md:text-sm text-white group-hover/item:text-[--brand-gold] transition-colors truncate"><?= h($branch['name'] ?? $branch['branch_name'] ?? 'Center') ?></div>
+                                    <div class="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate"><?= h($branch['code'] ?? 'ACTIVE') ?> • Synced</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 md:gap-3 shrink-0 pl-2">
+                                <!-- Mobile UX Fix: Chevron always visible on small screens -->
+                                <span class="text-[--brand-gold] transition-all duration-300 transform sm:-translate-x-2 sm:opacity-0 group-hover/item:translate-x-0 group-hover/item:opacity-100">
+                                    <i class="fa-solid fa-chevron-right text-xs md:text-sm"></i>
+                                </span>
+                                <div class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[--brand-gold] shadow-[0_0_12px_rgba(229,184,34,0.8)] animate-pulse"></div>
                             </div>
                         </a>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <div class="text-slate-500 text-xs italic">No active branches found.</div>
+                        <div class="text-slate-500 text-xs italic p-4 bg-white/5 rounded-2xl">Network booting up or no branches found in database...</div>
                     <?php endif; ?>
                 </div>
-            </div>
-        </div>
-    </div>
-</header>
-
-<!-- Why Choose Us -->
-<section class="py-24 bg-slate-900 text-white relative overflow-hidden">
-    <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-        <div class="absolute right-0 bottom-0 w-96 h-96 bg-gold rounded-full blur-[100px]"></div>
-    </div>
-    <div class="max-w-7xl mx-auto px-6 relative z-10">
-        <div class="text-center mb-16">
-            <span class="text-[10px] font-black uppercase text-gold tracking-[0.2em] mb-3 block">Sheindana Advantage</span>
-            <h2 class="text-4xl font-black italic">WHY CHOOSE <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200">US?</span></h2>
-        </div>
-        
-        <div class="grid md:grid-cols-3 gap-12">
-            <div class="text-center group">
-                <div class="w-20 h-20 bg-white/10 rounded-[32px] flex items-center justify-center mx-auto mb-6 text-3xl text-gold group-hover:scale-110 transition duration-300">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
-                <h3 class="text-xl font-black mb-4">Unified Curriculum</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">Standardized Japanese language training across all 5 branches, ensuring quality education regardless of location.</p>
-            </div>
-            <div class="text-center group">
-                <div class="w-20 h-20 bg-white/10 rounded-[32px] flex items-center justify-center mx-auto mb-6 text-3xl text-gold group-hover:scale-110 transition duration-300">
-                    <i class="fa-solid fa-passport"></i>
-                </div>
-                <h3 class="text-xl font-black mb-4">Visa Support</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">Expert guidance on COE applications and student visa processing with a 98% success rate history.</p>
-            </div>
-            <div class="text-center group">
-                <div class="w-20 h-20 bg-white/10 rounded-[32px] flex items-center justify-center mx-auto mb-6 text-3xl text-gold group-hover:scale-110 transition duration-300">
-                    <i class="fa-solid fa-handshake"></i>
-                </div>
-                <h3 class="text-xl font-black mb-4">Direct Placement</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">Exclusive partnerships with top universities and vocational colleges in Tokyo, Osaka, and Fukuoka.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Academic Programs (Database Driven) -->
-<section id="programs" class="py-24 px-6 max-w-7xl mx-auto">
-    <div class="text-center mb-16">
-        <span class="text-[10px] font-black uppercase text-gold tracking-[0.2em] mb-3 block">Unified Curriculum</span>
-        <h2 class="text-4xl font-black italic text-slate-900">ACADEMIC <span class="text-slate-400">PROGRAMS</span></h2>
+<section id="programs" class="py-16 md:py-24 px-6 max-w-[1600px] mx-auto relative">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-16 gap-4 md:gap-6">
+        <div>
+            <span class="text-[10px] font-black uppercase text-[--brand-red] tracking-[0.2em] mb-3 flex items-center gap-2">
+                <div class="w-8 h-px bg-[--brand-red]"></div> Unified Curriculum
+            </span>
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">ACADEMIC <span class="text-slate-400 font-light italic">PROGRAMS</span></h2>
+        </div>
+        <div class="text-sm font-bold text-slate-500 max-w-sm text-left md:text-right border-l-2 md:border-l-0 md:border-r-2 border-[--brand-gold] pl-4 md:pl-0 md:pr-4 py-1 md:py-0">
+            World-class JLPT & EJU preparation, standardized across our Yangon network to guarantee success.
+        </div>
     </div>
 
     <?php if(isset($programs) && count($programs) > 0): ?>
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
             <?php foreach($programs as $program): ?>
-            <!-- Linked Program Card -->
-            <a href="<?= base_url('index.php?route=pages/class_details&name=' . urlencode($program['class_name'])) ?>" class="block h-full">
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 hover:border-gold hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl group flex flex-col h-full cursor-pointer relative overflow-hidden">
-                    <!-- Hover Effect Background -->
-                    <div class="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+            <!-- Dynamic anchor tag wrapping the entire program card -->
+            <a href="<?= route('pages/class_details&name=' . urlencode($program['class_name'])) ?>" class="block h-full group active:scale-[0.98] transition-transform">
+                <div class="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-slate-100 group-hover:border-[--brand-gold] group-hover:-translate-y-2 transition-all duration-300 shadow-sm group-hover:shadow-2xl flex flex-col h-full relative overflow-hidden">
                     
-                    <div class="relative z-10 w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-xl font-black mb-6 group-hover:bg-gold transition-colors shrink-0">
-                        <i class="<?= h($program['icon']) ?>"></i>
+                    <!-- Red/Gold Accent Line -->
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[--brand-red] to-[--brand-gold] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    
+                    <!-- Arrow Indicator -->
+                    <div class="absolute top-6 right-6 md:top-8 md:right-8 text-slate-200 group-hover:text-[--brand-gold] transition-colors text-lg md:text-xl transform group-hover:translate-x-1 group-hover:-translate-y-1">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </div>
-                    <h3 class="relative z-10 text-xl font-black mb-2 text-slate-900 leading-tight">
+
+                    <div class="relative z-10 w-12 h-12 md:w-14 md:h-14 bg-slate-50 text-slate-400 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl font-black mb-6 md:mb-8 group-hover:bg-slate-900 group-hover:text-[--brand-gold] transition-colors shrink-0 shadow-sm border border-slate-100">
+                        <i class="<?= h($program['icon'] ?? 'fa-solid fa-book-open') ?>"></i>
+                    </div>
+                    
+                    <h3 class="relative z-10 text-xl md:text-2xl font-black mb-2 md:mb-3 text-slate-900 leading-tight group-hover:text-[--brand-red] transition-colors pr-6">
                         <?= h($program['class_name']) ?>
                     </h3>
-                    <p class="relative z-10 text-xs text-slate-500 mb-6 leading-relaxed flex-grow">
-                        <?= h($program['description']) ?>
+                    
+                    <p class="relative z-10 text-xs md:text-sm text-slate-500 mb-6 md:mb-8 leading-relaxed flex-grow">
+                        <?= h($program['description'] ?? 'Comprehensive syllabus designed for maximum retention and JLPT success. Tailored for ambitious students.') ?>
                     </p>
-                    <div class="relative z-10 text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-4 border-t border-slate-50 flex justify-between items-center">
-                        <span><i class="fa-regular fa-clock mr-1 text-gold"></i> <?= h($program['duration_text']) ?></span>
-                        <span class="text-gold group-hover:translate-x-1 transition"><i class="fa-solid fa-arrow-right"></i></span>
+                    
+                    <div class="relative z-10 text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest pt-4 md:pt-5 border-t border-slate-100 flex justify-between items-center">
+                        <span class="flex items-center gap-1.5"><i class="fa-regular fa-clock text-[--brand-gold]"></i> <?= h($program['duration_text'] ?? '6 Months') ?></span>
+                        <span class="bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200 group-hover:bg-[--brand-gold]/10 group-hover:border-[--brand-gold]/30 group-hover:text-[--brand-gold] transition-colors"><?= h($program['shift']) ?></span>
                     </div>
                 </div>
             </a>
             <?php endforeach; ?>
         </div>
     <?php else: ?>
-        <div class="text-center py-12 bg-slate-50 rounded-[32px] border border-slate-100">
-            <p class="text-slate-400 font-bold text-sm">No active academic programs available at the moment.</p>
+        <div class="text-center py-16 md:py-20 bg-slate-50 rounded-[32px] md:rounded-[40px] border-2 border-dashed border-slate-200 mx-4 md:mx-0">
+            <i class="fa-solid fa-graduation-cap text-4xl md:text-5xl text-slate-300 mb-4"></i>
+            <p class="text-slate-500 font-bold text-xs md:text-sm uppercase tracking-widest">Academic Roster Updating</p>
         </div>
     <?php endif; ?>
 </section>
 
-<!-- Upcoming Events (Static) -->
-<section class="py-24 bg-white px-6">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12">
-            <div>
-                <span class="text-[10px] font-black uppercase text-gold tracking-[0.2em] mb-3 block">Calendar</span>
-                <h2 class="text-4xl font-black italic text-slate-900">UPCOMING <span class="text-slate-400">EVENTS</span></h2>
-            </div>
-            <a href="#" class="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-gold transition mt-4 md:mt-0">View All Events →</a>
-        </div>
+<!-- Pacific Finder Teaser & School Showcase -->
+<section class="py-16 md:py-24 bg-slate-900 text-white px-6 relative overflow-hidden">
+    <!-- SHN Background Graphic - Scaled for Mobile -->
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] sm:text-[200px] md:text-[400px] font-black text-white pointer-events-none select-none opacity-[0.03] italic">SHN</div>
 
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="group bg-slate-50 p-8 rounded-[40px] border border-slate-100 hover:border-gold transition flex items-start gap-6">
-                <div class="bg-white p-4 rounded-2xl text-center min-w-[80px] shadow-sm">
-                    <span class="block text-2xl font-black text-slate-900">15</span>
-                    <span class="text-[10px] font-black uppercase text-slate-400">NOV</span>
-                </div>
-                <div>
-                    <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-3 inline-block">Seminar</span>
-                    <h3 class="text-xl font-black text-slate-900 mb-2 group-hover:text-gold transition">Study in Japan 2026</h3>
-                    <p class="text-xs text-slate-500 mb-4">Join representatives from Tokyo Kokusai Academy for a free consultation at Kamayut HQ.</p>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase"><i class="fa-regular fa-clock mr-1"></i> 10:00 AM - 4:00 PM</span>
-                </div>
-            </div>
-            <div class="group bg-slate-50 p-8 rounded-[40px] border border-slate-100 hover:border-gold transition flex items-start gap-6">
-                <div class="bg-white p-4 rounded-2xl text-center min-w-[80px] shadow-sm">
-                    <span class="block text-2xl font-black text-slate-900">01</span>
-                    <span class="text-[10px] font-black uppercase text-slate-400">DEC</span>
-                </div>
-                <div>
-                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-3 inline-block">Deadline</span>
-                    <h3 class="text-xl font-black text-slate-900 mb-2 group-hover:text-gold transition">April Intake Closing</h3>
-                    <p class="text-xs text-slate-500 mb-4">Final submission date for April 2026 intake documents for language schools.</p>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Urgent</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Dynamic Pacific Finder Section (AJAX Powered) -->
-<section id="finder" class="py-24 px-6 max-w-7xl mx-auto bg-slate-900 rounded-[60px] mb-20 text-white relative overflow-hidden" 
-         x-data="{ 
-            filter: 'all', 
-            schools: [],
-            loading: true,
-            async fetchSchools() {
-                this.loading = true;
-                try {
-                    const response = await fetch('<?= base_url('api/search_schools.php') ?>?region=' + this.filter);
-                    const json = await response.json();
-                    this.schools = json.data;
-                } catch(e) {
-                    console.error('Error fetching schools:', e);
-                }
-                this.loading = false;
-            }
-         }"
-         x-init="fetchSchools()">
-    
-    <div class="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 pointer-events-none"></div>
-    <div class="relative z-10">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12 px-8 pt-8">
-            <div>
-                 <h2 class="text-4xl font-black italic text-white">PACIFIC <span class="text-red-500">FINDER</span></h2>
-                 <p class="text-slate-400 mt-2">Live Database of Partner Institutions</p>
-            </div>
-            
-            <!-- Filter Buttons -->
-            <div class="flex bg-white/10 p-1 rounded-full border border-white/10 backdrop-blur-sm mt-6 md:mt-0">
-                <button @click="filter = 'all'; fetchSchools()" :class="filter === 'all' ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white'" class="px-6 py-2 rounded-full text-xs font-black uppercase transition-all">All</button>
-                <button @click="filter = 'Tokyo'; fetchSchools()" :class="filter === 'Tokyo' ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white'" class="px-6 py-2 rounded-full text-xs font-black uppercase transition-all">Tokyo</button>
-                <button @click="filter = 'Osaka'; fetchSchools()" :class="filter === 'Osaka' ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white'" class="px-6 py-2 rounded-full text-xs font-black uppercase transition-all">Osaka</button>
-            </div>
-        </div>
+    <div class="max-w-[1400px] mx-auto text-center relative z-10">
         
-        <!-- School Grid -->
-        <div class="px-8 pb-8 min-h-[400px]">
+        <div class="max-w-4xl mx-auto">
+            <div class="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white rounded-full mb-6 md:mb-8 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+                <img src="<?= asset_url('images/shine_logo.png') ?>" alt="SHN Logo" class="w-10 h-10 md:w-12 md:h-12 object-contain" onerror="this.style.display='none'">
+            </div>
             
-            <!-- Loading State -->
-            <div x-show="loading" class="flex justify-center items-center h-64">
-                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-gold"></i>
-            </div>
+            <span class="block text-[9px] md:text-[10px] font-black uppercase text-[--brand-gold] tracking-[0.2em] mb-3 md:mb-4">The Pacific Institutional Database</span>
+            
+            <h2 class="text-3xl sm:text-4xl md:text-6xl font-black mb-4 md:mb-6 tracking-tight uppercase italic leading-tight">
+                Discover Your Perfect <br class="hidden sm:block">Campus in <span class="text-[--brand-red]">Japan</span>
+            </h2>
+            
+            <p class="text-slate-400 text-sm md:text-lg mb-8 md:mb-10 leading-relaxed max-w-3xl mx-auto">
+                Why limit your choices? Explore our meticulously curated directory of premium Japanese institutions. From intensive Language Academies in bustling Tokyo to specialized IT Colleges in Osaka, we seamlessly manage the entire pipeline—from local N5 training right through to your final COE approval.
+            </p>
+        </div>
 
-            <!-- Empty State -->
-            <div x-show="!loading && schools.length === 0" class="flex justify-center items-center h-32 text-slate-500">
-                No institutions found for this region.
-            </div>
-
-            <!-- Results -->
-            <div x-show="!loading && schools.length > 0" class="grid md:grid-cols-3 gap-8">
-                <template x-for="school in schools" :key="school.id">
-                    <div class="bg-white rounded-[32px] overflow-hidden border border-slate-100 hover:scale-[1.02] transition duration-300 group shadow-2xl">
-                        <div class="h-48 bg-slate-800 relative overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60"></div>
-                            <div class="absolute top-4 left-4 bg-red-600 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg" x-text="school.type"></div>
-                            <div class="absolute bottom-4 left-4 text-white">
-                                 <div class="text-[10px] font-black uppercase text-white/60 tracking-widest">Est. <span x-text="school.est_year"></span></div>
-                            </div>
+        <!-- Dynamic Featured Schools Showcase -->
+        <?php if(count($featured_schools) > 0): ?>
+            <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mt-10 md:mt-16 mb-8 md:mb-12 relative z-10 text-left">
+                <?php foreach($featured_schools as $school): ?>
+                <!-- Anchor Wrap for Schools -->
+                <a href="<?= route('pages/school_details&id=' . $school['id']) ?>" class="bg-white/5 border border-white/10 rounded-[24px] md:rounded-[32px] p-5 md:p-6 hover:bg-white/10 hover:border-[--brand-gold] transition-all duration-300 group flex flex-col h-full active:scale-[0.98]">
+                    <div class="flex justify-between items-start mb-4 md:mb-6">
+                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-[--brand-gold] text-slate-900 flex items-center justify-center font-black text-xl md:text-2xl shadow-[0_0_20px_rgba(229,184,34,0.3)] group-hover:-rotate-6 transition-transform">
+                            <?= strtoupper(substr($school['school_name'], 0, 1)) ?>
                         </div>
-                        <div class="p-8">
-                            <h3 class="text-xl font-black leading-tight mb-1 text-slate-900" x-text="school.school_name"></h3>
-                            <p class="text-xs font-bold text-slate-400 mb-6 flex items-center gap-2">
-                                <i class="fa-solid fa-location-dot text-red-500"></i> <span x-text="school.region"></span> Region
-                            </p>
-                            <a :href="'<?= base_url('index.php?route=pages/school_details&id=') ?>' + school.id" class="block w-full py-3 rounded-xl border-2 border-slate-100 text-xs font-black uppercase text-center text-slate-900 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition">
-                                View Profile
-                            </a>
-                        </div>
+                        <span class="bg-[--brand-red]/20 text-white border border-[--brand-red]/50 px-2 md:px-3 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest shadow-sm text-center">
+                            <?= h($school['type']) ?>
+                        </span>
                     </div>
-                </template>
+                    
+                    <h3 class="text-lg md:text-xl font-black text-white mb-2 group-hover:text-[--brand-gold] transition-colors leading-tight line-clamp-2" title="<?= h($school['school_name']) ?>">
+                        <?= h($school['school_name']) ?>
+                    </h3>
+                    
+                    <p class="text-slate-400 text-[10px] md:text-xs font-bold mb-6 md:mb-8 flex items-center gap-2 flex-grow">
+                        <i class="fa-solid fa-location-dot text-[--brand-red]"></i> <?= h($school['city']) ?>, <?= h($school['region']) ?>
+                    </p>
+                    
+                    <div class="block w-full text-center py-2.5 md:py-3 rounded-lg md:rounded-xl border border-white/20 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest group-hover:bg-[--brand-gold] group-hover:text-slate-900 group-hover:border-[--brand-gold] transition-colors mt-auto">
+                        View Profile
+                    </div>
+                </a>
+                <?php endforeach; ?>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- FAQ Section -->
-<section class="py-24 bg-white px-6">
-    <div class="max-w-4xl mx-auto" x-data="{ active: 1 }">
-        <div class="text-center mb-16">
-            <span class="text-[10px] font-black uppercase text-gold tracking-[0.2em] mb-3 block">Common Questions</span>
-            <h2 class="text-4xl font-black italic text-slate-900">FAQ</h2>
-        </div>
-
-        <div class="space-y-4">
-            <div class="border border-slate-100 rounded-3xl overflow-hidden">
-                <button @click="active = (active === 1 ? null : 1)" class="w-full flex justify-between items-center p-6 bg-slate-50 hover:bg-slate-100 transition text-left">
-                    <span class="font-bold text-slate-900">What are the requirements for the student visa?</span>
-                    <i :class="active === 1 ? 'fa-minus' : 'fa-plus'" class="fa-solid text-gold text-sm"></i>
-                </button>
-                <div x-show="active === 1" x-collapse class="p-6 text-sm text-slate-500 leading-relaxed border-t border-slate-100">
-                    To apply for a student visa, you typically need to have completed 12 years of education (High School graduate), pass the JLPT N5 or equivalent, and provide financial sponsorship documentation.
-                </div>
-            </div>
-            <div class="border border-slate-100 rounded-3xl overflow-hidden">
-                <button @click="active = (active === 2 ? null : 2)" class="w-full flex justify-between items-center p-6 bg-slate-50 hover:bg-slate-100 transition text-left">
-                    <span class="font-bold text-slate-900">Can I work part-time in Japan?</span>
-                    <i :class="active === 2 ? 'fa-minus' : 'fa-plus'" class="fa-solid text-gold text-sm"></i>
-                </button>
-                <div x-show="active === 2" x-collapse class="p-6 text-sm text-slate-500 leading-relaxed border-t border-slate-100">
-                    Yes, international students in Japan can work up to 28 hours per week with a "Permission to Engage in Activity other than that Permitted under the Status of Residence Previously Granted."
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Contact/Enquiry Form -->
-<section class="py-24 bg-slate-50 px-6">
-    <div class="max-w-7xl mx-auto bg-slate-900 rounded-[60px] p-8 md:p-20 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 pointer-events-none"></div>
+        <?php endif; ?>
         
-        <div class="grid md:grid-cols-2 gap-16 relative z-10 items-center">
-            <div class="text-white">
-                <span class="bg-gold text-slate-900 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest mb-6 inline-block">Get Started</span>
-                <h2 class="text-4xl md:text-5xl font-black mb-6 leading-tight">Start Your Journey <br>To Japan Today.</h2>
-                <p class="text-slate-400 mb-8 max-w-md">Fill out the form and our admissions team will contact you within 24 hours for a free consultation.</p>
-                <div class="space-y-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-gold"><i class="fa-solid fa-phone"></i></div>
-                        <span class="font-bold"><?= ORG_PHONE ?></span>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-gold"><i class="fa-solid fa-envelope"></i></div>
-                        <span class="font-bold"><?= ORG_EMAIL ?></span>
-                    </div>
-                </div>
-            </div>
+        <!-- Call to Action -->
+        <a href="<?= route('pages/schools') ?>" class="flex sm:inline-flex w-full sm:w-auto items-center justify-center gap-3 bg-[--brand-red] text-white px-8 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[--brand-gold] hover:text-slate-900 transition-colors shadow-xl hover:shadow-[--brand-gold]/30 group mt-4 active:scale-[0.98]">
+            Explore All Partner Schools <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Contact / Enquiry Form -->
+<section id="enquiry" class="py-16 md:py-24 bg-slate-50 px-6">
+    <div class="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
+        
+        <!-- Left: Info & Trust signals -->
+        <div>
+            <span class="text-[10px] font-black uppercase text-[--brand-red] tracking-[0.2em] mb-3 flex items-center gap-2">
+                <div class="w-8 h-px bg-[--brand-red]"></div> Admissions Team
+            </span>
+            <h2 class="text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 leading-tight mb-4 md:mb-6 tracking-tighter">
+                Take the First <br>
+                Step <span class="text-[--brand-gold]">Today.</span>
+            </h2>
+            <p class="text-slate-500 text-sm md:text-lg mb-8 md:mb-10 max-w-md leading-relaxed font-medium">
+                Have questions about program placements, tuition estimates, or navigating the student visa process? Leave us a quick message, and our specialized agents will connect with you within 24 hours to map out your journey.
+            </p>
             
-            <form action="<?= base_url('index.php?route=pages/save_enquiry') ?>" method="POST" class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl space-y-4">
-                <h3 class="text-xl font-black text-slate-900 mb-6 uppercase italic">Quick Enquiry</h3>
+            <div class="space-y-3 md:space-y-4">
+                <a href="tel:<?= preg_replace('/[^0-9+]/', '', ORG_PHONE) ?>" class="flex items-center gap-4 md:gap-6 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-red] transition cursor-pointer active:scale-[0.98] group">
+                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-slate-50 flex items-center justify-center text-[--brand-red] text-lg md:text-xl shrink-0 border border-slate-100 group-hover:bg-[--brand-red] group-hover:text-white transition">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div>
+                        <div class="text-[9px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5 md:mb-1">Direct Helpline</div>
+                        <div class="text-base md:text-xl font-bold text-slate-900"><?= h(ORG_PHONE) ?></div>
+                    </div>
+                </a>
+                <a href="mailto:<?= h(ORG_EMAIL) ?>" class="flex items-center gap-4 md:gap-6 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-gold] transition cursor-pointer active:scale-[0.98] group">
+                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-slate-50 flex items-center justify-center text-[--brand-gold] text-lg md:text-xl shrink-0 border border-slate-100 group-hover:bg-[--brand-gold] group-hover:text-white transition">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <div class="text-[9px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5 md:mb-1">Email Support</div>
+                        <div class="text-sm md:text-lg font-bold text-slate-900 truncate"><?= h(ORG_EMAIL) ?></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+            
+        <!-- Right: The Form -->
+        <div class="bg-white rounded-[32px] md:rounded-[40px] p-6 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden border border-slate-100">
+            <!-- Decorative Glow -->
+            <div class="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-[--brand-gold] rounded-full blur-[80px] md:blur-[120px] opacity-10 pointer-events-none"></div>
+            
+            <h3 class="text-xl md:text-2xl font-black text-slate-900 mb-6 md:mb-8 flex items-center gap-3 relative z-10">
+                <i class="fa-regular fa-paper-plane text-[--brand-red]"></i> Request a Consultation
+            </h3>
+            
+            <?php if(isset($_GET['msg'])): ?>
+                <div class="bg-green-50 border border-green-200 text-green-700 p-3 md:p-4 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-bold mb-4 md:mb-6 flex items-center gap-2 shadow-sm animate-pulse">
+                    <i class="fa-solid fa-circle-check text-base md:text-lg"></i> <?= h($_GET['msg']) ?>
+                </div>
+            <?php endif; ?>
+            <?php if(isset($_GET['error'])): ?>
+                <div class="bg-red-50 border border-red-200 text-red-700 p-3 md:p-4 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-bold mb-4 md:mb-6 flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-base md:text-lg"></i> <?= h($_GET['error']) ?>
+                </div>
+            <?php endif; ?>
+
+            <form action="<?= route('pages/save_enquiry') ?>" method="POST" class="space-y-4 md:space-y-5 relative z-10">
+                <div>
+                    <label class="block text-[9px] md:text-[10px] font-black uppercase text-slate-500 mb-1 md:mb-2 ml-1">Full Name</label>
+                    <input type="text" name="full_name" required placeholder="e.g. Mg Mg" class="w-full bg-slate-50 border border-slate-200 text-slate-900 p-3 md:p-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm outline-none focus:ring-2 focus:ring-[--brand-gold]/50 focus:border-[--brand-gold] transition-all">
+                </div>
                 
-                <?php if(isset($_GET['msg'])): ?>
-                    <div class="bg-green-100 text-green-700 p-3 rounded-xl text-xs font-bold"><?= htmlspecialchars($_GET['msg']) ?></div>
-                <?php endif; ?>
-                <?php if(isset($_GET['error'])): ?>
-                    <div class="bg-red-100 text-red-700 p-3 rounded-xl text-xs font-bold"><?= htmlspecialchars($_GET['error']) ?></div>
-                <?php endif; ?>
+                <div class="grid sm:grid-cols-2 gap-4 md:gap-5">
+                    <div>
+                        <label class="block text-[9px] md:text-[10px] font-black uppercase text-slate-500 mb-1 md:mb-2 ml-1">Email Address</label>
+                        <input type="email" name="email" required placeholder="mail@example.com" class="w-full bg-slate-50 border border-slate-200 text-slate-900 p-3 md:p-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm outline-none focus:ring-2 focus:ring-[--brand-gold]/50 focus:border-[--brand-gold] transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] md:text-[10px] font-black uppercase text-slate-500 mb-1 md:mb-2 ml-1">Phone Number</label>
+                        <input type="text" name="phone" placeholder="09..." class="w-full bg-slate-50 border border-slate-200 text-slate-900 p-3 md:p-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm outline-none focus:ring-2 focus:ring-[--brand-gold]/50 focus:border-[--brand-gold] transition-all">
+                    </div>
+                </div>
 
-                <input type="text" name="full_name" required placeholder="Full Name" class="w-full bg-slate-50 p-4 rounded-2xl font-bold text-sm outline-none focus:ring-2 ring-gold transition">
-                <input type="email" name="email" required placeholder="Email Address" class="w-full bg-slate-50 p-4 rounded-2xl font-bold text-sm outline-none focus:ring-2 ring-gold transition">
-                <input type="text" name="phone" placeholder="Phone Number" class="w-full bg-slate-50 p-4 rounded-2xl font-bold text-sm outline-none focus:ring-2 ring-gold transition">
-                <select name="interest" class="w-full bg-slate-50 p-4 rounded-2xl font-bold text-sm outline-none focus:ring-2 ring-gold transition text-slate-500">
-                    <option value="General">Select Interest</option>
-                    <option value="Language Course">Language Course (N5-N1)</option>
-                    <option value="University">University Placement</option>
-                    <option value="Visa Info">Student Visa Info</option>
-                </select>
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gold hover:text-slate-900 transition shadow-lg mt-4">Send Enquiry</button>
+                <div>
+                    <label class="block text-[9px] md:text-[10px] font-black uppercase text-slate-500 mb-1 md:mb-2 ml-1">Area of Interest</label>
+                    <div class="relative">
+                        <select name="interest" class="w-full bg-slate-50 border border-slate-200 text-slate-900 p-3 md:p-4 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm outline-none focus:ring-2 focus:ring-[--brand-gold]/50 focus:border-[--brand-gold] transition-all appearance-none cursor-pointer">
+                            <option value="General">General Inquiry</option>
+                            <option value="Language Course">Language Course (JLPT Prep)</option>
+                            <option value="University">University Placement (EJU)</option>
+                            <option value="Vocational">Vocational & Specialized Institutes</option>
+                            <option value="Visa Info">Student Visa & COE Processing</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 md:right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs md:text-base"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-slate-900 text-white py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase text-[10px] md:text-xs tracking-widest hover:bg-[--brand-gold] hover:text-slate-900 transition-all mt-4 md:mt-6 shadow-xl transform hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2">
+                    Submit Request <i class="fa-solid fa-paper-plane"></i>
+                </button>
             </form>
         </div>
+
     </div>
 </section>
 
