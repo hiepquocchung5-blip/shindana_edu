@@ -23,7 +23,7 @@ User:
 Database:
  - Name: shinedana_co
  - Login: shinedana_co
- - Password: 7Fk_q./OX}c_cn.!
+ - Password: 7Fk_q./OX}c_cn.! , shinedanaDBUSER2026@!
 
 FTP account:
  - Login: shinedana_co
