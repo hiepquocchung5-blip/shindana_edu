@@ -10,7 +10,7 @@
 $host = 'localhost';
 $db   = 'shinedana_co';
 $user = 'shinedana_co_usr';      // Default XAMPP user
-$pass = 'Mk1=>A{yek`2[>S7';          // Default XAMPP password (leave empty)
+$pass = 'Fk_q./OX}c_cn.!';          // Default XAMPP password (leave empty)
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
