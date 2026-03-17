@@ -8,7 +8,7 @@
 // $charset = 'utf8mb4';
 
 $host = 'localhost';
-$db   = 'shinedana_co';
+$db   = 'shinedana_co_db';
 $user = 'shinedana_co';      // Default XAMPP user
 $pass = 'shinedanaDBUSER2026@!';          // Default XAMPP password (leave empty)
 $charset = 'utf8mb4';

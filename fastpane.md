@@ -1,5 +1,5 @@
 
-email ::
+email ::server password
 pass ::Pbd0aWQQAGJ7hQN5S#4d
 
 
@@ -30,3 +30,16 @@ FTP account:
  - Password: c^zc=<^i`X]dj~Bn
 
  https://github.com/hiepquocchung5-blip/shindana_edu
+
+
+gmail : info@shinedana.com
+psw :: Th5g)],8!P=_j9t
+
+gmail :: admin@shinedana.com
+psw :: cn7VSVsX,yRUO6=b
+
+
+http auth
+
+username :: shinedana
+password :: cn7VSVsX,yRUO6=b
