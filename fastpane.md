@@ -1,5 +1,5 @@
 
-email ::server password
+email :: ssh root@187.77.143.250
 pass ::Pbd0aWQQAGJ7hQN5S#4d
 
 

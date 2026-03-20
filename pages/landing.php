@@ -1,6 +1,6 @@
 <?php 
 // pages/landing.php
-// Main Entry Point for Shinedana.com
+// Main Entry Point for Sheindana.edu
 
 require_once '../config/db.php'; 
 require_once '../config/functions.php';
@@ -322,13 +322,14 @@ require_once '../includes/header.php';
                         <div class="text-sm md:text-xl font-bold text-slate-900"><?= h(ORG_PHONE) ?></div>
                     </div>
                 </a>
-                <a href="mailto:<?= h(ORG_EMAIL) ?>" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-gold] focus:outline-none focus:ring-2 focus:ring-[--brand-gold] transition cursor-pointer active:scale-[0.98] group">
+                <!-- UPDATED: Pointing explicitly to info@shinedana.com to match backend routing -->
+                <a href="mailto:info@shinedana.com" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-gold] focus:outline-none focus:ring-2 focus:ring-[--brand-gold] transition cursor-pointer active:scale-[0.98] group">
                     <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-slate-50 flex items-center justify-center text-[--brand-gold] text-base md:text-xl shrink-0 border border-slate-100 group-hover:bg-[--brand-gold] group-hover:text-white transition">
                         <i class="fa-solid fa-envelope"></i>
                     </div>
                     <div class="overflow-hidden">
                         <div class="text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5 md:mb-1">Email Support</div>
-                        <div class="text-xs md:text-lg font-bold text-slate-900 truncate"><?= h(ORG_EMAIL) ?></div>
+                        <div class="text-xs md:text-lg font-bold text-slate-900 truncate">info@shinedana.com</div>
                     </div>
                 </a>
             </div>
