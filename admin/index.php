@@ -135,7 +135,7 @@ try {
                     <i class="fa-solid fa-network-wired"></i>
                 </div>
                 <h4 class="font-black text-lg uppercase mb-2 group-hover:text-[#D4AF37] transition">Branch Network</h4>
-                <p class="text-sm text-slate-500 leading-relaxed">Update location details and toggle operational status for the 5 fixed academic centers.</p>
+                <p class="text-sm text-slate-500 leading-relaxed">Update location details and toggle operational status for academic centers.</p>
             </a>
 
             <!-- Module 2: Class Divisions -->
