@@ -16,7 +16,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'mark_contacted' && isset($_GET
 $enquiries = $pdo->query("SELECT * FROM enquiries ORDER BY created_at DESC")->fetchAll();
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<!-- <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Enquiry Leads | Shinedana</title>
@@ -104,4 +104,4 @@ $enquiries = $pdo->query("SELECT * FROM enquiries ORDER BY created_at DESC")->fe
     </main>
 
 </body>
-</html>
+</html> -->
