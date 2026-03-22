@@ -64,7 +64,7 @@ require_once '../includes/header.php';
                      alt="Campus 1" 
                      class="absolute top-0 right-0 w-3/4 h-[250px] md:h-[350px] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hover:scale-105 transition-transform duration-500">
                 <!-- Image 2 -->
-                <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80" 
+                <img src="https://shinedana.com/assets/images/shine_about_2.png" 
                      alt="Campus 2" 
                      class="absolute bottom-0 left-0 w-2/3 h-[200px] md:h-[300px] object-cover rounded-3xl shadow-2xl border-4 border-white z-20 hover:scale-105 transition-transform duration-500">
                 
@@ -74,7 +74,7 @@ require_once '../includes/header.php';
             
             <!-- Mobile Fallback Image -->
             <div class="sm:hidden w-full">
-                <img src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=800&q=80" 
+                <img src="https://shinedana.com/assets/images/shine_about_2.png" 
                      alt="Campus" 
                      class="w-full h-[250px] object-cover rounded-3xl shadow-xl border-4 border-white">
             </div>
@@ -177,7 +177,7 @@ require_once '../includes/header.php';
             <!-- Left: 1x1 Dummy Photo of Director -->
             <div class="md:w-2/5 relative h-[350px] md:h-auto shrink-0 bg-slate-200">
                 <!-- Using a professional businessman unsplash image for the 1x1 dummy -->
-                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&h=800&q=80" 
+                <img src="https://shinedana.com/assets/images/cmpf_dir_pf.png" 
                      alt="MR. SHINE WAI YAN ZAW" 
                      class="absolute inset-0 w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
