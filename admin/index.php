@@ -144,7 +144,7 @@ try {
                     <i class="fa-solid fa-chalkboard-user"></i>
                 </div>
                 <h4 class="font-black text-lg uppercase mb-2 group-hover:text-[#D4AF37] transition">Class Divisions</h4>
-                <p class="text-sm text-slate-500 leading-relaxed">Create unified classes and toggle visibility across all 5 branches instantly.</p>
+                <p class="text-sm text-slate-500 leading-relaxed">Create unified classes and toggle visibility across all  branches instantly.</p>
             </a>
 
             <!-- Module 3: Agent Network -->
