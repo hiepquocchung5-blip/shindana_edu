@@ -58,7 +58,7 @@
     </div>
     
     <div class="max-w-[1600px] mx-auto px-6 lg:px-12 text-center pt-8 border-t border-white/10 text-slate-500 text-[10px] font-black uppercase tracking-widest relative z-10">
-        &copy; <?= date('Y') ?> <?= h(ORG_NAME ?? 'Shinedana Global Education Co., Ltd.') ?> All Rights Reserved.
+        &copy; <?= date('Y') ?> <?= h(ORG_NAME ?? 'Shinedana   Education Co., Ltd.') ?> All Rights Reserved.
     </div>
 </footer>
 

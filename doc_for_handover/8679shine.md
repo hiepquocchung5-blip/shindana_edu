@@ -25,4 +25,4 @@
 │   └── process_login.php   # Backend Login Handler
 │
 ├── index.php               # [PUBLIC] Client Portal (Landing Page)
-└── style.css               # Global Styles
+└── style.css               #   Styles

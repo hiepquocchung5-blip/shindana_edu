@@ -13,7 +13,7 @@ if ($isLoggedIn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title><?= h(APP_NAME ?? 'Shinedana') ?> | <?= h(APP_TAGLINE ?? 'Global Education Ecosystem') ?></title>
+    <title><?= h(APP_NAME ?? 'Shinedana') ?> | <?= h(APP_TAGLINE ?? '  Education Ecosystem') ?></title>
     
     <!-- PWA & Mobile App Meta Tags -->
     <link rel="manifest" href="<?= base_url('manifest.json') ?>">
@@ -104,7 +104,7 @@ if ($isLoggedIn) {
             </div>
         </div>
 
-        <!-- Main Global Navigation -->
+        <!-- Main   Navigation -->
         <nav class="border-b border-slate-100 w-full z-40 relative transition-all duration-300"
              :class="scrolled ? 'bg-white/95 backdrop-blur-xl py-2 md:py-3' : 'bg-white/90 backdrop-blur-md py-3 md:py-4'">
             <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 flex justify-between items-center">

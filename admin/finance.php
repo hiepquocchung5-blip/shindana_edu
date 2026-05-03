@@ -139,7 +139,7 @@ $recent_invoices = $pdo->query("SELECT i.*, a.full_name FROM invoices i JOIN age
                     <div>
                         <div class="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center border-2 border-[#D4AF37] mb-4 text-[#D4AF37] font-black text-xl shadow-md">SD</div>
                         <h1 class="text-3xl font-black uppercase text-slate-900 tracking-tight">Tax Invoice</h1>
-                        <p class="text-xs font-black text-slate-500 uppercase mt-1 tracking-widest"><?= h(ORG_NAME ?? 'Sheindana Global Education Co., Ltd.') ?></p>
+                        <p class="text-xs font-black text-slate-500 uppercase mt-1 tracking-widest"><?= h(ORG_NAME ?? 'Sheindana   Education Co., Ltd.') ?></p>
                         <p class="text-xs text-slate-400 font-medium mt-1 max-w-xs leading-relaxed"><?= h(ORG_ADDRESS ?? 'Kamayut HQ, Yangon, Myanmar') ?></p>
                     </div>
                     <div class="text-right">

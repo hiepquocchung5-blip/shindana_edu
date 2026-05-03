@@ -17,7 +17,7 @@ $stmt_info->execute([$class_name]);
 $course_info = $stmt_info->fetch();
 
 if (!$course_info) {
-    die("Course not found in the global registry.");
+    die("Course not found in the   registry.");
 }
 
 // 3. Fetch Active Schedules Across Branches
@@ -85,7 +85,7 @@ require_once '../includes/header.php';
     </div>
 </header>
 
-<!-- Main Content Area: Global Schedules (Alpine Powered) -->
+<!-- Main Content Area:   Schedules (Alpine Powered) -->
 <main class="max-w-[1200px] mx-auto px-6 py-16 -mt-8 relative z-20" x-data="{ branchFilter: 'all', shiftFilter: 'all' }">
     
     <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-6 bg-white p-6 rounded-[32px] shadow-lg border border-slate-100">

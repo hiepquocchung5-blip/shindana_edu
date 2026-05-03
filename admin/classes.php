@@ -148,7 +148,7 @@ $classes = $stmt->fetchAll();
                 <a href="<?= admin_url('index') ?>" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
                 <div>
                     <div class="font-black text-xl uppercase tracking-tighter">Class <span class="text-[#D4AF37]">Management</span></div>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Global Sync Controller</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">  Sync Controller</p>
                 </div>
             </div>
             <button @click="showCreate = true" class="bg-[#D4AF37] text-slate-900 px-6 py-2.5 rounded-xl text-xs font-black uppercase hover:bg-white transition flex items-center gap-2 shadow-lg hover:shadow-yellow-500/20">

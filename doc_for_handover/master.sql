@@ -1,5 +1,5 @@
 -- ==============================================================================
--- SHEINDANA GLOBAL EDUCATION ECOSYSTEM - MASTER DATABASE SETUP SCRIPT
+-- SHEINDANA   EDUCATION ECOSYSTEM - MASTER DATABASE SETUP SCRIPT
 -- ==============================================================================
 -- WARNING: This will drop the existing database and recreate it from scratch.
 -- Do not run this on a production database unless you want to wipe all data!
@@ -133,7 +133,7 @@ CREATE TABLE japan_schools (
 INSERT INTO japan_schools (school_name, region, type, website, address_line, city, est_year, tuition_fees, admission_months, description) VALUES 
 ('Tokyo Kokusai Academy', 'Tokyo', 'Language School', 'https://example.com', '1-2-3 Shinjuku-ku', 'Shinjuku', 1985, 750000.00, 'April, October', 'A premier language institute located in the heart of Tokyo. High success rate for EJU placements.'),
 ('Osaka Technical Institute', 'Osaka', 'Vocational', 'https://example.com', '4-5 Namba', 'Namba', 2001, 1200000.00, 'April', 'Specialized IT and Engineering vocational college offering direct industry placements post-graduation.'),
-('Fukuoka Global University', 'Fukuoka', 'University', 'https://example.com', '7-8 Hakata', 'Hakata', 1960, 950000.00, 'April, September', 'Comprehensive university with an extensive international student support program and dormitory facilities.');
+('Fukuoka   University', 'Fukuoka', 'University', 'https://example.com', '7-8 Hakata', 'Hakata', 1960, 950000.00, 'April, September', 'Comprehensive university with an extensive international student support program and dormitory facilities.');
 
 -- ======================================================
 -- 6. STUDENT REGISTRATIONS & APPLICATIONS

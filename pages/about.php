@@ -45,7 +45,7 @@ require_once '../includes/header.php';
                     <div class="w-8 h-px bg-[--brand-red]"></div> Who We Are
                 </span>
                 <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                    Connecting Myanmar Workers with <span class="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-gold] to-[--brand-red]">Trusted Global Employers.</span>
+                    Connecting Myanmar Workers with <span class="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-gold] to-[--brand-red]">Trusted   Employers.</span>
                 </h2>
                 <div class="prose prose-sm md:prose-base prose-slate text-slate-600 font-medium">
                     <p>
@@ -118,7 +118,7 @@ require_once '../includes/header.php';
                 <div class="bg-white/5 border border-white/10 rounded-[32px] p-8 md:p-10 backdrop-blur-sm hover:border-[--brand-gold] transition-colors">
                     <div class="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
                         <div class="w-12 h-12 rounded-xl bg-[--brand-gold] flex items-center justify-center text-slate-900 text-2xl shadow-lg"><i class="fa-solid fa-earth-asia"></i></div>
-                        <h3 class="text-xl font-black uppercase tracking-widest text-[--brand-gold]">Global Sectors</h3>
+                        <h3 class="text-xl font-black uppercase tracking-widest text-[--brand-gold]">  Sectors</h3>
                     </div>
                     <p class="text-xs text-slate-400 mb-4 font-bold uppercase tracking-widest">Singapore • Malaysia • UAE • Laos • Thailand</p>
                     <ul class="grid sm:grid-cols-2 gap-y-3 gap-x-4 text-sm text-slate-300 font-medium">

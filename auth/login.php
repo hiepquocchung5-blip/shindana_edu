@@ -222,7 +222,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </div>
 
             <div class="relative z-10 text-[9px] lg:text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mt-4 lg:mt-0 border-t border-white/10 pt-4 lg:border-none lg:pt-0">
-                <span>© <?= date('Y') ?> Global System</span>
+                <span>© <?= date('Y') ?>   System</span>
                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-green-500"></i> AES-256 Encrypted</span>
             </div>
         </div>

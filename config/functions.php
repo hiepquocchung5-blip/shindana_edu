@@ -2,7 +2,7 @@
 // config/functions.php
 // Core Helper Functions for Shinedana.com
 
-// 1. Load Global Settings
+// 1. Load   Settings
 // Start session on every page load
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
