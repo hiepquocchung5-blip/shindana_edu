@@ -196,6 +196,15 @@ CREATE TABLE invoice_items (
     FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 );
 
+CREATE TABLE testimonials (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    placement VARCHAR(100) NOT NULL, -- e.g., "Tokyo Uni • Economics"
+    quote TEXT NOT NULL,
+    image_path VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Seed an example invoice
 INSERT INTO invoices (id, invoice_number, agent_id, total_amount, status) VALUES 
 (1, 'INV-2026-A8F29', 1, 200000.00, 'sent');

@@ -135,7 +135,7 @@ try {
                     <i class="fa-solid fa-network-wired"></i>
                 </div>
                 <h4 class="font-black text-lg uppercase mb-2 group-hover:text-[#D4AF37] transition">Branch Network</h4>
-                <p class="text-sm text-slate-500 leading-relaxed">Update location details and toggle operational status for academic centers.</p>
+                <p class="text-sm text-slate-500 leading-relaxed">Update location details and toggle operational status for the 5 fixed academic centers.</p>
             </a>
 
             <!-- Module 2: Class Divisions -->
@@ -144,7 +144,7 @@ try {
                     <i class="fa-solid fa-chalkboard-user"></i>
                 </div>
                 <h4 class="font-black text-lg uppercase mb-2 group-hover:text-[#D4AF37] transition">Class Divisions</h4>
-                <p class="text-sm text-slate-500 leading-relaxed">Create unified classes and toggle visibility across all  branches instantly.</p>
+                <p class="text-sm text-slate-500 leading-relaxed">Create unified classes and toggle visibility across all 5 branches instantly.</p>
             </a>
 
             <!-- Module 3: Agent Network -->
@@ -193,6 +193,16 @@ try {
                 <p class="text-sm text-slate-500 leading-relaxed">Manage internal staff accounts, assign roles, and configure system access.</p>
             </a>
             <?php endif; ?>
+
+            <!-- Module 8: Success Stories / Testimonials -->
+            <a href="<?= admin_url('testimonials') ?>" class="group bg-white p-8 rounded-[32px] shadow-lg border border-slate-100 hover:border-[#D4AF37] transition duration-300 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37] rounded-bl-full opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white text-xl mb-6 group-hover:bg-[#D4AF37] group-hover:text-slate-900 transition shadow-md">
+                    <i class="fa-solid fa-quote-left"></i>
+                </div>
+                <h4 class="font-black text-lg uppercase mb-2 group-hover:text-[#D4AF37] transition">Success Stories</h4>
+                <p class="text-sm text-slate-500 leading-relaxed">Manage alumni testimonials, photos, and quotes for the public landing page.</p>
+            </a>
 
         </div>
     </main>

@@ -9,6 +9,7 @@ require_once '../config/functions.php';
 $branches = [];
 $programs = [];
 $featured_schools = [];
+$testimonials = [];
 
 try {
     // Fetch all branches safely and filter in PHP to avoid 'is_active' vs 'status' SQL column errors
@@ -18,29 +19,10 @@ try {
     $branches = array_filter($raw_branches, function($b) {
         if (isset($b['is_active'])) return $b['is_active'] == 1;
         if (isset($b['status'])) return $b['status'] === 'active';
-        return true; // Fallback if neither column exists
+        return true; 
     });
 } catch (PDOException $e) { 
     error_log("Branches query failed: " . $e->getMessage()); 
-}
-
-try {
-    // Wrapped non-grouped columns in MAX() to satisfy ONLY_FULL_GROUP_BY strict mode
-    $stmt_programs = $pdo->query("
-        SELECT 
-            class_name, 
-            MAX(academic_year) as academic_year,
-            MAX(shift) as shift,
-            MAX(description) as description,
-            MAX(duration_text) as duration_text,
-            MAX(icon) as icon
-        FROM class_divisions 
-        WHERE status = 'active' 
-        GROUP BY class_name
-    ");
-    $programs = $stmt_programs->fetchAll();
-} catch (PDOException $e) { 
-    error_log("Programs query failed: " . $e->getMessage()); 
 }
 
 try {
@@ -56,59 +38,47 @@ try {
     error_log("Schools showcase query failed: " . $e->getMessage());
 }
 
+try {
+    // Fetch top 3 dynamic testimonials for the Success Stories block
+    $stmt_testi = $pdo->query("SELECT * FROM testimonials ORDER BY created_at DESC LIMIT 3");
+    $testimonials = $stmt_testi->fetchAll();
+} catch (PDOException $e) {
+    error_log("Testimonials query failed: " . $e->getMessage());
+}
+
 // Include Header (brings in our --brand-gold and --brand-red variables)
 require_once '../includes/header.php';
 ?>
 
-<!-- Custom CSS for Landing Page Specifics -->
 <style>
-    /* Smooth scroll behavior for the entire page */
     html { scroll-behavior: smooth; }
-
-    /* Desktop terminal scrollbar for the branches list */
     .terminal-scroll::-webkit-scrollbar { width: 4px; }
     .terminal-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; }
     .terminal-scroll::-webkit-scrollbar-thumb { background: var(--brand-gold); border-radius: 4px; }
-    
-    /* Mobile Horizontal Snap Carousel */
     @media (max-width: 768px) {
         .mobile-snap-x {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Firefox */
-            gap: 1rem;
-            padding-bottom: 0.5rem;
-            width: 100%; /* Ensure container takes full width */
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 1rem; padding-bottom: 0.5rem; width: 100%; 
         }
-        .mobile-snap-x::-webkit-scrollbar {
-            display: none; /* Safari/Chrome */
-        }
-        .mobile-snap-card {
-            flex: 0 0 85%; /* Slightly narrower so the next card peeks in */
-            scroll-snap-align: center;
-        }
+        .mobile-snap-x::-webkit-scrollbar { display: none; }
+        .mobile-snap-card { flex: 0 0 85%; scroll-snap-align: center; }
     }
 </style>
 
-<!-- Hero Section (Immersive Dark Tech / Circuit UI) -->
+<!-- Hero Section -->
 <section class="bg-slate-900 min-h-[90vh] flex items-center relative px-4 sm:px-6 lg:px-12 overflow-hidden py-24 md:py-32">
-    <!-- Abstract Background Elements -->
     <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(var(--brand-gold) 1px, transparent 1px); background-size: 40px 40px;"></div>
     <div class="absolute top-[-10%] right-[-5%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-[--brand-red] rounded-full blur-[120px] md:blur-[180px] opacity-20 pointer-events-none mix-blend-screen"></div>
     <div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] md:w-[700px] md:h-[700px] bg-[--brand-gold] rounded-full blur-[120px] md:blur-[180px] opacity-10 pointer-events-none mix-blend-screen"></div>
 
     <div class="max-w-[1600px] mx-auto w-full grid lg:grid-cols-2 gap-12 lg:gap-16 relative z-10 items-center">
         
-        <!-- Hero Content -->
         <div class="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-1000 mt-8 md:mt-0">
             <div class="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-4 md:px-5 py-2 md:py-2.5 rounded-full backdrop-blur-md shadow-lg">
                 <span class="text-[--brand-gold] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-[--brand-red] animate-pulse"></span> Verified Partner
+                    <span class="w-2 h-2 rounded-full bg-[--brand-red] animate-pulse"></span> Licensed Agency
                 </span>
                 <div class="h-4 w-px bg-white/20"></div>
-                <span class="text-white/80 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Yangon <i class="fa-solid fa-arrow-right mx-1 text-[--brand-red]"></i> Japan</span>
+                <span class="text-white/80 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Myanmar <i class="fa-solid fa-arrow-right mx-1 text-[--brand-red]"></i> Global</span>
             </div>
             
             <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] font-black text-white leading-[1.1] md:leading-[0.95] tracking-tighter">
@@ -117,20 +87,19 @@ require_once '../includes/header.php';
             </h1>
             
             <p class="text-slate-400 text-sm md:text-lg max-w-xl leading-relaxed font-medium">
-                Myanmar's premier Japanese education ecosystem. Master the language locally, and seamlessly transition to our verified, top-tier partner institutions across Tokyo, Osaka, and beyond.
+                Shine Da Na connects Myanmar professionals with direct employment opportunities in Japan, UAE, Singapore, and beyond. Master the language and secure your career.
             </p>
 
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 md:pt-4">
-                <a href="#programs" class="w-full sm:w-auto bg-[--brand-gold] text-slate-900 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-white hover:shadow-[0_0_40px_rgba(229,184,34,0.5)] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[--brand-gold] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1">
-                    Explore Programs <i class="fa-solid fa-arrow-down"></i>
+                <a href="#about" class="w-full sm:w-auto bg-[--brand-gold] text-slate-900 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-white hover:shadow-[0_0_40px_rgba(229,184,34,0.5)] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[--brand-gold] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1">
+                    Who We Are <i class="fa-solid fa-arrow-down"></i>
                 </a>
-                <a href="<?= route('pages/schools') ?>" class="w-full sm:w-auto bg-white/5 text-white border border-white/10 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-[--brand-red] hover:border-[--brand-red] hover:shadow-[0_0_40px_rgba(217,33,40,0.4)] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[--brand-red] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1 backdrop-blur-sm">
-                    Pacific Finder <i class="fa-solid fa-magnifying-glass"></i>
+                <a href="#programs" class="w-full sm:w-auto bg-white/5 text-white border border-white/10 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-[--brand-red] hover:border-[--brand-red] hover:shadow-[0_0_40px_rgba(217,33,40,0.4)] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[--brand-red] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1 backdrop-blur-sm">
+                    View Programs
                 </a>
             </div>
         </div>
 
-        <!-- Hero Dynamic Status Card (Swipeable on Mobile) -->
         <div class="relative group w-full overflow-hidden sm:overflow-visible" id="branches">
             <div class="absolute -inset-1 bg-gradient-to-r from-[--brand-red] to-[--brand-gold] rounded-[24px] md:rounded-[40px] blur opacity-25 group-hover:opacity-50 transition duration-1000 hidden sm:block"></div>
             <div class="bg-slate-900/80 backdrop-blur-xl p-5 md:p-10 rounded-[24px] md:rounded-[40px] border border-white/10 relative shadow-2xl transform lg:rotate-1 lg:hover:rotate-0 transition-transform duration-500 w-full max-w-[100vw]">
@@ -144,7 +113,6 @@ require_once '../includes/header.php';
                     <i class="fa-solid fa-server text-[--brand-gold]"></i> Network Status
                 </h3>
                 
-                <!-- Desktop: Vertical Scroll | Mobile: Horizontal Snap Scroll -->
                 <div class="mobile-snap-x md:block md:space-y-4 md:max-h-[360px] md:overflow-y-auto terminal-scroll md:pr-2">
                     <?php if(isset($branches) && count($branches) > 0): ?>
                         <?php foreach($branches as $branch): ?>
@@ -175,8 +143,60 @@ require_once '../includes/header.php';
     </div>
 </section>
 
-<!-- Academic Programs (Database Driven) -->
-<!-- scroll-mt-32 ensures clicking the Hero anchor scrolls to the right place under the sticky nav -->
+<!-- About Summary Section (NEW) -->
+<section id="about" class="py-16 md:py-24 px-4 sm:px-6 max-w-[1600px] mx-auto relative scroll-mt-32">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <!-- Left Side: Image / Graphics -->
+        <div class="relative order-2 lg:order-1">
+            <div class="absolute -top-10 -left-10 w-64 h-64 bg-[--brand-gold] rounded-full blur-[80px] opacity-20 hidden md:block"></div>
+            <div class="absolute -bottom-10 -right-10 w-64 h-64 bg-[--brand-red] rounded-full blur-[80px] opacity-10 hidden md:block"></div>
+            
+            <div class="grid grid-cols-2 gap-4 relative z-10">
+                <div class="space-y-4">
+                    <div class="bg-white rounded-[32px] p-6 shadow-xl border border-slate-100 transform hover:-translate-y-2 transition-transform duration-300">
+                        <i class="fa-solid fa-earth-americas text-4xl text-[--brand-gold] mb-4"></i>
+                        <h4 class="font-black text-slate-900 text-lg mb-1">Global Reach</h4>
+                        <p class="text-xs font-bold text-slate-500">Japan, UAE, Singapore, Malaysia & More.</p>
+                    </div>
+                    <div class="bg-slate-900 rounded-[32px] p-6 shadow-xl transform translate-x-4 md:translate-x-8 hover:-translate-y-2 transition-transform duration-300">
+                        <i class="fa-solid fa-language text-4xl text-[--brand-red] mb-4"></i>
+                        <h4 class="font-black text-white text-lg mb-1">Language Ops</h4>
+                        <p class="text-xs font-bold text-slate-400">Japanese, Chinese, English, Korean mastery.</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-[32px] p-8 shadow-xl border border-slate-100 flex flex-col justify-center mt-8 hover:-translate-y-2 transition-transform duration-300">
+                    <h3 class="text-[50px] md:text-[80px] font-black text-[--brand-gold] leading-none mb-2 tracking-tighter">100<span class="text-3xl text-[--brand-red]">%</span></h3>
+                    <h4 class="font-black text-slate-900 text-lg uppercase tracking-tight">Legal & Safe</h4>
+                    <p class="text-xs font-bold text-slate-500 mt-2 leading-relaxed">Officially licensed by the Ministry of Labor - Department of Labor.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Text Content -->
+        <div class="order-1 lg:order-2">
+            <span class="text-[9px] md:text-[10px] font-black uppercase text-[--brand-red] tracking-[0.2em] mb-2 md:mb-3 flex items-center gap-2">
+                <div class="w-6 md:w-8 h-px bg-[--brand-red]"></div> Who We Are
+            </span>
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+                株式会社シャインダナー <br>
+                <span class="text-slate-400 font-light italic">Shinedana Co., Ltd.</span>
+            </h2>
+            
+            <p class="text-sm md:text-base text-slate-600 font-medium leading-relaxed mb-6">
+                Officially licensed by the Ministry of Labor, Shine Da Na Overseas Employment Agency and Foreign Language Training Centre provides professional and reliable services for overseas employment and language education.
+            </p>
+            <p class="text-sm md:text-base text-slate-600 font-medium leading-relaxed mb-10">
+                Our mission is to help Myanmar workers build a better future by providing safe, legal, and transparent opportunities, along with the training and guidance needed to succeed internationally.
+            </p>
+
+            <a href="<?= route('pages/about') ?>" class="inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-[--brand-gold] hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-[--brand-gold]/50 transition-colors shadow-xl group active:scale-[0.98]">
+                Read Company Profile <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Academic Programs -->
 <section id="programs" class="py-16 md:py-24 px-4 sm:px-6 max-w-[1600px] mx-auto relative scroll-mt-32">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16 gap-4 md:gap-6">
         <div>
@@ -186,21 +206,16 @@ require_once '../includes/header.php';
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">ACADEMIC <span class="text-slate-400 font-light italic">PROGRAMS</span></h2>
         </div>
         <div class="text-xs md:text-sm font-bold text-slate-500 max-w-sm text-left md:text-right border-l-2 md:border-l-0 md:border-r-2 border-[--brand-gold] pl-3 md:pl-0 md:pr-4 py-1 md:py-0">
-            World-class JLPT & EJU preparation, standardized across our Yangon network to guarantee success.
+            World-class JLPT, Tokutei, Chinese & Korean preparation, standardized across our network.
         </div>
     </div>
 
     <?php if(isset($programs) && count($programs) > 0): ?>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
             <?php foreach($programs as $program): ?>
-            <!-- Dynamic anchor tag wrapping the entire program card -->
             <a href="<?= route('pages/class_details&name=' . urlencode($program['class_name'])) ?>" class="block h-full group active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[--brand-gold]/50 rounded-[20px] md:rounded-[32px] transition-all">
                 <div class="bg-white p-5 md:p-8 rounded-[20px] md:rounded-[32px] border border-slate-100 group-hover:border-[--brand-gold] group-hover:-translate-y-2 transition-all duration-300 shadow-sm group-hover:shadow-2xl flex flex-col h-full relative overflow-hidden">
-                    
-                    <!-- Red/Gold Accent Line -->
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[--brand-red] to-[--brand-gold] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    
-                    <!-- Arrow Indicator -->
                     <div class="absolute top-4 right-4 md:top-8 md:right-8 text-slate-200 group-hover:text-[--brand-gold] transition-colors text-base md:text-xl transform group-hover:translate-x-1 group-hover:-translate-y-1">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </div>
@@ -235,11 +250,9 @@ require_once '../includes/header.php';
 
 <!-- Pacific Finder Teaser & School Showcase -->
 <section class="py-16 md:py-24 bg-slate-900 text-white px-4 sm:px-6 relative overflow-hidden">
-    <!-- SHN Background Graphic - Scaled for Mobile -->
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[100px] sm:text-[200px] md:text-[400px] font-black text-white pointer-events-none select-none opacity-[0.03] italic">SHN</div>
 
     <div class="max-w-[1400px] mx-auto text-center relative z-10">
-        
         <div class="max-w-4xl mx-auto">
             <div class="inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 bg-white rounded-full mb-4 md:mb-8 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                 <img src="<?= asset_url('images/shine_logo.png') ?>" alt="SHN Logo" class="w-8 h-8 md:w-12 md:h-12 object-contain" onerror="this.style.display='none'">
@@ -252,15 +265,13 @@ require_once '../includes/header.php';
             </h2>
             
             <p class="text-slate-400 text-xs md:text-lg mb-6 md:mb-10 leading-relaxed max-w-3xl mx-auto">
-                Why limit your choices? Explore our meticulously curated directory of premium Japanese institutions. From intensive Language Academies in bustling Tokyo to specialized IT Colleges in Osaka, we seamlessly manage the entire pipeline—from local N5 training right through to your final COE approval.
+                Why limit your choices? Explore our meticulously curated directory of premium Japanese institutions. From intensive Language Academies in bustling Tokyo to specialized IT Colleges in Osaka, we seamlessly manage the entire pipeline.
             </p>
         </div>
 
-        <!-- Dynamic Featured Schools Showcase -->
         <?php if(count($featured_schools) > 0): ?>
             <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mt-8 md:mt-16 mb-6 md:mb-12 relative z-10 text-left">
                 <?php foreach($featured_schools as $school): ?>
-                <!-- Anchor Wrap for Schools -->
                 <a href="<?= route('pages/school_details&id=' . $school['id']) ?>" class="bg-white/5 border border-white/10 rounded-[20px] md:rounded-[32px] p-4 md:p-6 hover:bg-white/10 hover:border-[--brand-gold] focus:outline-none focus:ring-4 focus:ring-[--brand-gold]/50 transition-all duration-300 group flex flex-col h-full active:scale-[0.98]">
                     <div class="flex justify-between items-start mb-3 md:mb-6">
                         <div class="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-2xl bg-[--brand-gold] text-slate-900 flex items-center justify-center font-black text-lg md:text-2xl shadow-[0_0_20px_rgba(229,184,34,0.3)] group-hover:-rotate-6 transition-transform">
@@ -287,7 +298,6 @@ require_once '../includes/header.php';
             </div>
         <?php endif; ?>
         
-        <!-- Call to Action -->
         <a href="<?= route('pages/schools') ?>" class="flex sm:inline-flex w-full sm:w-auto items-center justify-center gap-3 bg-[--brand-red] text-white px-6 md:px-10 py-3.5 md:py-5 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-[--brand-gold] hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-[--brand-red] transition-colors shadow-xl hover:shadow-[--brand-gold]/30 group mt-2 md:mt-4 active:scale-[0.98]">
             Explore All Partner Schools <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
         </a>
@@ -295,7 +305,6 @@ require_once '../includes/header.php';
 </section>
 
 <!-- Contact / Enquiry Form -->
-<!-- scroll-mt-32 ensures hash links anchor properly without header overlap -->
 <section id="enquiry" class="py-16 md:py-24 bg-slate-50 px-4 sm:px-6 scroll-mt-32">
     <div class="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
         
@@ -313,46 +322,45 @@ require_once '../includes/header.php';
             </p>
             
             <div class="space-y-3 md:space-y-4">
-                <a href="tel:<?= preg_replace('/[^0-9+]/', '', ORG_PHONE) ?>" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-red] focus:outline-none focus:ring-2 focus:ring-[--brand-red] transition cursor-pointer active:scale-[0.98] group">
+                <a href="tel:<?= preg_replace('/[^0-9+]/', '', ORG_PHONE ?? '') ?>" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-red] focus:outline-none focus:ring-2 focus:ring-[--brand-red] transition cursor-pointer active:scale-[0.98] group">
                     <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-slate-50 flex items-center justify-center text-[--brand-red] text-base md:text-xl shrink-0 border border-slate-100 group-hover:bg-[--brand-red] group-hover:text-white transition">
                         <i class="fa-solid fa-phone"></i>
                     </div>
                     <div>
-                        <div class="text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5 md:mb-1">Direct Helpline</div>
-                        <div class="text-sm md:text-xl font-bold text-slate-900"><?= h(ORG_PHONE) ?></div>
+                    <span class="text-[10px] font-black uppercase text-[--brand-gold] tracking-[0.2em] mb-3 block">Alumni Network</span>
+                    <h2 class="text-3xl md:text-5xl font-black text-white italic">WALL OF <span class="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-gold] to-yellow-200">EXCELLENCE</span></h2>
+                </div>
+                <button class="text-white border border-white/20 px-6 py-3 rounded-full text-xs font-bold uppercase hover:bg-white hover:text-slate-900 transition w-full md:w-auto">View All 500+ Alumni</button>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <?php foreach($testimonials as $testimony): ?>
+                <div class="bg-white/5 border border-white/10 p-8 rounded-[32px] backdrop-blur-sm hover:-translate-y-2 transition-transform duration-300 group">
+                    <div class="flex items-center gap-4 mb-6">
+                        <!-- Dynamic Image fetched from our public assets folder -->
+                        <div class="w-14 h-14 rounded-full bg-slate-700 bg-cover bg-center border-2 border-white/10 shadow-inner group-hover:border-[--brand-gold] transition-colors" style="background-image: url('<?= asset_url('images/testimonials/' . h($testimony['image_path'])) ?>');"></div>
+                        <div>
+                            <h4 class="text-white font-bold text-lg leading-tight"><?= h($testimony['name']) ?></h4>
+                            <p class="text-[10px] text-[--brand-gold] uppercase font-black tracking-widest mt-1"><?= h($testimony['placement']) ?></p>
+                        </div>
                     </div>
-                </a>
-                <!-- UPDATED: Pointing explicitly to info@shinedana.com to match backend routing -->
-                <a href="mailto:info@shinedana.com" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-gold] focus:outline-none focus:ring-2 focus:ring-[--brand-gold] transition cursor-pointer active:scale-[0.98] group">
-                    <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-slate-50 flex items-center justify-center text-[--brand-gold] text-base md:text-xl shrink-0 border border-slate-100 group-hover:bg-[--brand-gold] group-hover:text-white transition">
-                        <i class="fa-solid fa-envelope"></i>
+                    <p class="text-slate-400 text-sm italic leading-relaxed font-medium">"<?= h($testimony['quote']) ?>"</p>
+                </div>
+                <?php endforeach; ?>
+                
+                <?php if(empty($testimonials)): ?>
+                    <div class="col-span-3 text-center py-12 border border-dashed border-white/10 rounded-[32px]">
+                        <i class="fa-regular fa-comment-dots text-4xl text-slate-500 mb-3"></i>
+                        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Alumni success stories will be updated shortly.</p>
                     </div>
-                    <div class="overflow-hidden">
-                        <div class="text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5 md:mb-1">Email Support</div>
-                        <div class="text-xs md:text-lg font-bold text-slate-900 truncate">info@shinedana.com</div>
-                    </div>
-                </a>
+                <?php endif; ?>
             </div>
         </div>
-            
-        <!-- Right: The Form -->
-        <div class="bg-white rounded-[24px] md:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden border border-slate-100 mt-4 md:mt-0">
-            <!-- Decorative Glow -->
-            <div class="absolute top-0 right-0 w-32 h-32 md:w-64 md:h-64 bg-[--brand-gold] rounded-full blur-[60px] md:blur-[120px] opacity-10 pointer-events-none"></div>
-            
-            <h3 class="text-lg md:text-2xl font-black text-slate-900 mb-4 md:mb-8 flex items-center gap-2 md:gap-3 relative z-10">
-                <i class="fa-regular fa-paper-plane text-[--brand-red]"></i> Request a Consultation
-            </h3>
-            
-            <?php if(isset($_GET['msg'])): ?>
-                <div class="bg-green-50 border border-green-200 text-green-700 p-3 md:p-4 rounded-lg md:rounded-2xl text-[9px] md:text-xs font-bold mb-4 md:mb-6 flex items-center gap-2 shadow-sm animate-pulse">
-                    <i class="fa-solid fa-circle-check text-sm md:text-lg"></i> <?= h($_GET['msg']) ?>
+    </section>
+
+    <!-- UPCOMING EVENTS -->
                 </div>
-            <?php endif; ?>
-            <?php if(isset($_GET['error'])): ?>
-                <div class="bg-red-50 border border-red-200 text-red-700 p-3 md:p-4 rounded-lg md:rounded-2xl text-[9px] md:text-xs font-bold mb-4 md:mb-6 flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-triangle-exclamation text-sm md:text-lg"></i> <?= h($_GET['error']) ?>
-                </div>
+                
             <?php endif; ?>
 
             <form action="<?= route('pages/save_enquiry') ?>" method="POST" class="space-y-3 md:space-y-5 relative z-10">
