@@ -17,6 +17,9 @@ try {
     $programs = [];
     $testimonials = [];
 }
+
+// Convert Schools to JSON for Alpine.js real-time search
+$schoolsJson = htmlspecialchars(json_encode($schools), ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -89,7 +92,32 @@ try {
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="app-bg h-screen w-screen overflow-hidden flex flex-col" x-data="{ currentTab: 'home', showLangModal: false }">
+<!-- Initialize Alpine State with Real-Time Search Data -->
+<body class="app-bg h-screen w-screen overflow-hidden flex flex-col" 
+      x-data="{ 
+          appLoaded: false, 
+          currentTab: 'home', 
+          showLangModal: false,
+          searchQuery: '',
+          schoolsList: <?= $schoolsJson ?>
+      }">
+
+    <!-- Native App Splash Screen (Fades out after 800ms) -->
+    <div x-show="!appLoaded" 
+         x-init="setTimeout(() => appLoaded = true, 800)"
+         x-transition:leave="transition ease-in duration-500"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-110"
+         class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center">
+        <div class="w-24 h-24 bg-[#E5B822] rounded-3xl flex items-center justify-center text-slate-900 font-black text-4xl shadow-[0_0_40px_rgba(229,184,34,0.5)] animate-bounce relative">
+            SD
+            <div class="absolute inset-0 rounded-3xl border-4 border-[#E5B822] animate-ping opacity-50"></div>
+        </div>
+        <h1 class="text-white font-black mt-8 text-xl tracking-widest uppercase">Sheindana</h1>
+        <div class="mt-4 w-32 h-1 bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-[#D92128] animate-pulse w-full"></div>
+        </div>
+    </div>
 
     <!-- Hidden Google Translate Element -->
     <div id="google_translate_element"></div>
@@ -141,7 +169,7 @@ try {
                 
                 <div class="snap-x-container">
                     <?php foreach($schools as $school): ?>
-                    <div class="snap-card bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden flex flex-col min-h-[180px] active:scale-[0.98] transition-transform">
+                    <div class="snap-card bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden flex flex-col min-h-[180px] active:scale-[0.98] transition-transform" @click="window.location.href='<?= route('pages/school_details&id=' . $school['id']) ?>'">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-[#D92128] rounded-full blur-[50px] opacity-20 pointer-events-none"></div>
                         
                         <div class="flex justify-between items-start mb-auto relative z-10">
@@ -169,7 +197,7 @@ try {
                 <h3 class="text-sm font-black uppercase tracking-widest border-l-2 border-[#E5B822] pl-2 mb-4">Academic Programs</h3>
                 <div class="space-y-3">
                     <?php foreach($programs as $program): ?>
-                    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-transform cursor-pointer shadow-sm">
+                    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl flex items-center gap-4 active:scale-95 transition-transform cursor-pointer shadow-sm" @click="window.location.href='<?= route('pages/class_details&name=' . urlencode($program['class_name'])) ?>'">
                         <div class="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center text-[#E5B822] text-xl shadow-inner border border-slate-800">
                             <i class="<?= h($program['icon'] ?? 'fa-solid fa-book') ?>"></i>
                         </div>
@@ -230,27 +258,38 @@ try {
 
         </div>
 
-        <!-- SCHOOLS TAB (Full Directory) -->
-        <div x-show="currentTab === 'schools'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-4" class="p-6 h-full" style="display: none;">
-            <h2 class="text-2xl font-black mb-6">Partner <span class="text-[#D92128]">Institutions</span></h2>
+        <!-- SCHOOLS TAB (Full Directory with Real-Time Alpine Search) -->
+        <div x-show="currentTab === 'schools'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-4" class="p-6 h-full flex flex-col" style="display: none;">
+            <h2 class="text-2xl font-black mb-6 shrink-0">Partner <span class="text-[#D92128]">Institutions</span></h2>
             
-            <div class="relative mb-6">
+            <div class="relative mb-6 shrink-0">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                <input type="text" placeholder="Search schools by name or city..." class="w-full bg-slate-800 border border-slate-700 text-white text-xs px-10 py-3.5 rounded-xl outline-none focus:border-[#E5B822] transition placeholder-slate-500 shadow-inner">
+                <input type="text" x-model="searchQuery" placeholder="Search schools by name or city..." class="w-full bg-slate-800 border border-slate-700 text-white text-xs px-10 py-3.5 rounded-xl outline-none focus:border-[#E5B822] transition placeholder-slate-500 shadow-inner">
+                <!-- Clear Search Button -->
+                <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <?php foreach($schools as $school): ?>
-                <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col justify-between aspect-square active:scale-95 transition-transform shadow-md">
-                    <div class="w-8 h-8 rounded-lg bg-[#E5B822] text-slate-900 flex items-center justify-center font-black mb-2 shadow-md">
-                        <?= strtoupper(substr($school['school_name'], 0, 1)) ?>
-                    </div>
-                    <div>
-                        <h4 class="font-black text-xs leading-tight mb-1 truncate"><?= h($school['school_name']) ?></h4>
-                        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest truncate"><?= h($school['city']) ?></p>
-                    </div>
+            <!-- Real-Time Filtered Grid -->
+            <div class="grid grid-cols-2 gap-4 flex-1 overflow-y-auto pb-4">
+                <template x-for="school in schoolsList.filter(s => s.school_name.toLowerCase().includes(searchQuery.toLowerCase()) || s.city.toLowerCase().includes(searchQuery.toLowerCase()) || s.region.toLowerCase().includes(searchQuery.toLowerCase()))" :key="school.id">
+                    <a :href="'<?= base_url('index.php?route=pages/school_details&id=') ?>' + school.id" class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col justify-between aspect-square active:scale-95 transition-transform shadow-md block">
+                        <div class="w-8 h-8 rounded-lg bg-[#E5B822] text-slate-900 flex items-center justify-center font-black mb-2 shadow-md" x-text="school.school_name.substring(0, 1).toUpperCase()"></div>
+                        <div>
+                            <h4 class="font-black text-xs leading-tight mb-1 truncate text-white" x-text="school.school_name"></h4>
+                            <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                                <span x-text="school.city"></span>, <span x-text="school.region"></span>
+                            </p>
+                        </div>
+                    </a>
+                </template>
+
+                <!-- Empty State -->
+                <div x-show="schoolsList.filter(s => s.school_name.toLowerCase().includes(searchQuery.toLowerCase()) || s.city.toLowerCase().includes(searchQuery.toLowerCase())).length === 0" class="col-span-2 flex flex-col items-center justify-center py-12 opacity-50">
+                    <i class="fa-solid fa-magnifying-glass-minus text-4xl mb-3"></i>
+                    <p class="text-xs font-black uppercase tracking-widest">No schools found</p>
                 </div>
-                <?php endforeach; ?>
             </div>
         </div>
 
@@ -275,7 +314,7 @@ try {
     <nav class="fixed bottom-0 w-full bg-slate-900/95 backdrop-blur-2xl border-t border-white/10 pb-safe z-50">
         <div class="flex justify-around items-center px-2 pt-2 pb-1">
             
-            <button @click="currentTab = 'home'" class="flex flex-col items-center gap-1 p-2 w-16 transition-colors active:scale-95" :class="currentTab === 'home' ? 'text-[#E5B822]' : 'text-slate-500 hover:text-slate-300'">
+            <button @click="currentTab = 'home'; searchQuery = ''" class="flex flex-col items-center gap-1 p-2 w-16 transition-colors active:scale-95" :class="currentTab === 'home' ? 'text-[#E5B822]' : 'text-slate-500 hover:text-slate-300'">
                 <i class="text-xl" :class="currentTab === 'home' ? 'fa-solid fa-house' : 'fa-light fa-house'"></i>
                 <span class="text-[9px] font-bold tracking-widest uppercase">Home</span>
             </button>
