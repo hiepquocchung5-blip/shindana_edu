@@ -15,11 +15,19 @@ if ($isLoggedIn) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title><?= h(APP_NAME ?? 'Shinedana') ?> | <?= h(APP_TAGLINE ?? 'Global Education Ecosystem') ?></title>
     
+    <!-- PWA & Mobile App Meta Tags -->
+    <link rel="manifest" href="<?= base_url('manifest.json') ?>">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sheindana">
+    <link rel="apple-touch-icon" href="<?= asset_url('images/icon-192.png') ?>">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Alpine.js for Interactive UI -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Noto+Sans+Myanmar:wght@400;500;700&display=swap" rel="stylesheet">
@@ -66,9 +74,10 @@ if ($isLoggedIn) {
     </style>
 </head>
 <body class="antialiased text-slate-900 flex flex-col min-h-screen" 
-      x-data="{ mobileMenuOpen: false, scrolled: false, langOpen: false }"
+      x-data="{ mobileMenuOpen: false, scrolled: false, langOpen: false, deferredPrompt: null }"
       :class="mobileMenuOpen ? 'overflow-hidden' : ''"
-      @scroll.window="scrolled = (window.pageYOffset > 20)">
+      @scroll.window="scrolled = (window.pageYOffset > 20)"
+      @beforeinstallprompt.window="deferredPrompt = $event; $event.preventDefault();">
 
     <!-- Hidden Google Translate Element (Required for API) -->
     <div id="google_translate_element"></div>
@@ -77,7 +86,7 @@ if ($isLoggedIn) {
     <header class="fixed w-full z-50 transition-all duration-300 flex flex-col"
             :class="scrolled ? 'shadow-xl' : 'shadow-sm'">
         
-        <!-- Corporate Micro-Header (Top Bar) - Hidden on Mobile, Shows on Tablet (md) -->
+        <!-- Corporate Micro-Header (Top Bar) -->
         <div class="bg-slate-900 text-white/80 py-1.5 px-4 sm:px-6 lg:px-12 text-[9px] md:text-[10px] font-bold uppercase tracking-widest hidden md:flex justify-between items-center z-50 relative transition-all duration-300"
              :class="scrolled ? 'h-0 opacity-0 overflow-hidden py-0' : 'h-auto opacity-100'">
             <div class="flex gap-4 md:gap-6">
@@ -85,7 +94,6 @@ if ($isLoggedIn) {
                 <a href="mailto:info@shinedana.com" class="hover:text-white transition flex items-center group"><i class="fa-solid fa-envelope text-[--brand-red] mr-1.5 group-hover:scale-110 transition-transform"></i> info@shinedana.com</a>
             </div>
             <div class="flex gap-4 items-center">
-                <!-- UPDATED: Added Company Profile Link -->
                 <a href="<?= route('pages/about') ?>" class="hover:text-[--brand-gold] transition flex items-center gap-1.5">
                     <i class="fa-regular fa-building opacity-70"></i> Company Profile
                 </a>
@@ -101,7 +109,7 @@ if ($isLoggedIn) {
              :class="scrolled ? 'bg-white/95 backdrop-blur-xl py-2 md:py-3' : 'bg-white/90 backdrop-blur-md py-3 md:py-4'">
             <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 flex justify-between items-center">
                 
-                <!-- Brand Logo (Optimized for 320px-425px) -->
+                <!-- Brand Logo -->
                 <a href="<?= base_url() ?>" class="flex items-center gap-2.5 sm:gap-3 group z-50 shrink-0">
                     <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[--brand-gold] flex items-center justify-center shadow-lg group-hover:-rotate-12 transition-transform relative overflow-hidden border-2 border-white shrink-0">
                         <img src="<?= asset_url('images/shine_logo.png') ?>" alt="SHN" class="w-full h-full object-cover relative z-10" onerror="this.style.display='none'">
@@ -121,7 +129,6 @@ if ($isLoggedIn) {
                 <!-- Desktop Menu (Hidden below 1024px) -->
                 <div class="hidden lg:flex items-center gap-6 xl:gap-8 h-full">
                     
-                    <!-- UPDATED: Added About Us to Main Nav -->
                     <a href="<?= route('pages/about') ?>" class="text-xs font-bold uppercase tracking-widest text-slate-600 hover:text-[--brand-red] transition flex items-center gap-1.5 group">
                         <i class="fa-solid fa-address-card text-slate-300 group-hover:text-[--brand-red] transition-colors"></i> About Us
                     </a>
@@ -161,9 +168,16 @@ if ($isLoggedIn) {
                     </a>
                 </div>
 
-                <!-- Utilities (Translate + Login + Hamburger) -->
+                <!-- Utilities (Install PWA + Translate + Login + Hamburger) -->
                 <div class="flex items-center gap-3 sm:gap-4 z-50">
                     
+                    <!-- Dynamic Install PWA Button (Desktop) -->
+                    <button x-show="deferredPrompt" x-cloak
+                            @click="deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice => { if(choice.outcome === 'accepted') deferredPrompt = null; })"
+                            class="hidden lg:flex items-center gap-2 bg-white border border-[--brand-gold]/30 text-slate-900 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[--brand-gold] hover:border-[--brand-gold] transition shadow-sm hover:shadow-[0_0_15px_rgba(229,184,34,0.3)]">
+                        <i class="fa-solid fa-download text-[--brand-gold] group-hover:text-slate-900"></i> Install App
+                    </button>
+
                     <!-- Custom Language Switcher (Visible on Tablet/Desktop) -->
                     <div class="hidden md:block relative" @click.away="langOpen = false">
                         <button @click="langOpen = !langOpen" class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 hover:border-slate-300 transition focus:outline-none focus:ring-2 focus:ring-[--brand-gold]/30 shadow-sm">
@@ -216,6 +230,13 @@ if ($isLoggedIn) {
                  class="absolute top-full left-0 w-full bg-white/95 backdrop-blur-3xl border-b border-slate-100 shadow-2xl lg:hidden h-[calc(100vh-64px)] overflow-y-auto pb-24">
                 <div class="flex flex-col px-4 sm:px-6 py-6 space-y-5">
                     
+                    <!-- Dynamic Install PWA Button (Mobile Drawer) -->
+                    <button x-show="deferredPrompt" x-cloak
+                            @click="deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice => { if(choice.outcome === 'accepted') { deferredPrompt = null; mobileMenuOpen = false; } })"
+                            class="w-full bg-[--brand-gold] text-slate-900 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(229,184,34,0.3)] flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Install Native App
+                    </button>
+
                     <div class="space-y-2">
                         <a href="<?= route('pages/about') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-base sm:text-lg font-black uppercase tracking-widest text-slate-900 border border-slate-100 bg-white p-4 rounded-2xl hover:border-[--brand-gold] transition active:scale-[0.98]">
                             <span class="flex items-center gap-3"><i class="fa-solid fa-building text-[--brand-red]"></i> About Us</span> <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
@@ -258,7 +279,7 @@ if ($isLoggedIn) {
                         </a>
                     </div>
                     
-                    <!-- Mobile Contact Info (Helpful for 425px bottom screen) -->
+                    <!-- Mobile Contact Info -->
                     <div class="pt-4 text-center md:hidden">
                         <a href="mailto:info@shinedana.com" class="text-[10px] font-bold text-slate-400 hover:text-[--brand-red] transition"><i class="fa-solid fa-envelope mr-1"></i> info@shinedana.com</a>
                     </div>
@@ -270,7 +291,7 @@ if ($isLoggedIn) {
     <!-- Spacer to offset the fixed header dynamically based on screen size -->
     <div class="h-[64px] sm:h-[72px] md:h-[104px]"></div>
 
-    <!-- Custom Google Translate Logic - FIXED FOR BULLETPROOF SWITCHING -->
+    <!-- Custom Google Translate Logic -->
     <script type="text/javascript">
         // Initialize Google Translate
         function googleTranslateElementInit() {
@@ -283,24 +304,19 @@ if ($isLoggedIn) {
 
         // Custom JS to trigger Google Translate via native events and cookies
         function changeLanguage(langCode) {
-            // 1. Always set the cookie robustly for both the root path and domain
             document.cookie = "googtrans=/en/" + langCode + "; path=/;";
             document.cookie = "googtrans=/en/" + langCode + "; path=/; domain=" + window.location.hostname;
             
-            // 2. Try to dispatch the event on the hidden select field created by Google Translate
             var selectField = document.querySelector('select.goog-te-combo');
             const langMap = { 'en': '🇬🇧 EN', 'ja': '🇯🇵 JP', 'my': '🇲🇲 MM' };
             
             if (selectField) {
                 selectField.value = langCode;
-                // Dispatch event with bubbles true so Google's listener catches it perfectly
                 selectField.dispatchEvent(new Event('change', { bubbles: true }));
                 
-                // Update UI Display safely
                 const displayElem = document.getElementById('current-lang-display');
                 if(displayElem) displayElem.innerText = langMap[langCode] || langCode.toUpperCase();
             } else {
-                // 3. Fallback: If Google Translate hasn't injected the box yet, reload the page to force the cookie check
                 window.location.reload();
             }
         }
@@ -318,3 +334,18 @@ if ($isLoggedIn) {
         });
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('<?= base_url("sw.js") ?>')
+            .then(registration => {
+              console.log('PWA ServiceWorker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+              console.error('ServiceWorker registration failed:', error);
+            });
+        });
+      }
+    </script>
