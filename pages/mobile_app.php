@@ -6,12 +6,17 @@
 require_once '../config/db.php';
 require_once '../config/functions.php';
 
-// Fetch App Data
-$schools = $pdo->query("SELECT * FROM japan_schools ORDER BY created_at DESC LIMIT 10")->fetchAll();
-$programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GROUP BY class_name LIMIT 5")->fetchAll();
-
-// We DO NOT include the standard desktop header here. 
-// We are building a standalone Native App UI shell.
+// Fetch App Data safely
+try {
+    $schools = $pdo->query("SELECT * FROM japan_schools ORDER BY created_at DESC LIMIT 10")->fetchAll();
+    $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GROUP BY class_name LIMIT 5")->fetchAll();
+    $testimonials = $pdo->query("SELECT * FROM testimonials ORDER BY created_at DESC LIMIT 5")->fetchAll();
+} catch (PDOException $e) {
+    error_log("Mobile App DB Error: " . $e->getMessage());
+    $schools = [];
+    $programs = [];
+    $testimonials = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,6 +72,10 @@ $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GRO
             scroll-snap-align: center;
             flex: 0 0 85%;
         }
+        .snap-card-testimonial {
+            scroll-snap-align: center;
+            flex: 0 0 90%;
+        }
 
         /* Bottom Nav Safe Area for iPhones */
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
@@ -99,13 +108,13 @@ $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GRO
         
         <div class="flex items-center gap-4">
             <!-- Language Switcher Trigger -->
-            <button @click="showLangModal = true" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-[#E5B822] active:scale-95 transition-transform">
+            <button @click="showLangModal = true" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-[#E5B822] active:scale-95 transition-transform shadow-sm">
                 <i class="fa-solid fa-globe text-sm"></i>
             </button>
             <!-- Notifications -->
-            <button class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center relative active:scale-95 transition-transform">
+            <button class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center relative active:scale-95 transition-transform shadow-sm">
                 <i class="fa-regular fa-bell text-sm"></i>
-                <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D92128] animate-pulse"></span>
+                <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D92128] animate-pulse shadow-[0_0_8px_#D92128]"></span>
             </button>
         </div>
     </header>
@@ -123,19 +132,20 @@ $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GRO
             </div>
 
             <!-- Spotlight: Japan Schools (Swipeable Tinder/Netflix style cards) -->
+            <?php if(count($schools) > 0): ?>
             <div class="mb-6">
                 <div class="px-6 flex justify-between items-end mb-4">
                     <h3 class="text-sm font-black uppercase tracking-widest border-l-2 border-[#D92128] pl-2">Pacific Database</h3>
-                    <button @click="currentTab = 'schools'" class="text-[9px] text-[#E5B822] uppercase font-bold tracking-widest">View All</button>
+                    <button @click="currentTab = 'schools'" class="text-[9px] text-[#E5B822] uppercase font-bold tracking-widest active:opacity-50">View All</button>
                 </div>
                 
                 <div class="snap-x-container">
-                    <?php foreach($schools as $idx => $school): ?>
+                    <?php foreach($schools as $school): ?>
                     <div class="snap-card bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden flex flex-col min-h-[180px] active:scale-[0.98] transition-transform">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-[#D92128] rounded-full blur-[50px] opacity-20 pointer-events-none"></div>
                         
                         <div class="flex justify-between items-start mb-auto relative z-10">
-                            <span class="bg-white/10 text-white px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-white/20"><?= h($school['type']) ?></span>
+                            <span class="bg-white/10 text-white px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-white/20 shadow-sm"><?= h($school['type']) ?></span>
                             <div class="w-10 h-10 rounded-xl bg-[#E5B822] flex items-center justify-center font-black text-slate-900 text-lg shadow-lg">
                                 <?= strtoupper(substr($school['school_name'], 0, 1)) ?>
                             </div>
@@ -151,9 +161,11 @@ $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GRO
                     <?php endforeach; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Academic Programs List -->
-            <div class="px-6 mb-6">
+            <?php if(count($programs) > 0): ?>
+            <div class="px-6 mb-8">
                 <h3 class="text-sm font-black uppercase tracking-widest border-l-2 border-[#E5B822] pl-2 mb-4">Academic Programs</h3>
                 <div class="space-y-3">
                     <?php foreach($programs as $program): ?>
@@ -172,6 +184,37 @@ $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GRO
                     <?php endforeach; ?>
                 </div>
             </div>
+            <?php endif; ?>
+
+            <!-- DYNAMIC TESTIMONIALS (CMS Driven - Swipeable) -->
+            <?php if(count($testimonials) > 0): ?>
+            <div class="mb-8">
+                <div class="px-6 mb-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest border-l-2 border-[#D92128] pl-2">Alumni Success</h3>
+                </div>
+                
+                <div class="snap-x-container">
+                    <?php foreach($testimonials as $testimony): ?>
+                    <div class="snap-card-testimonial bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-3xl p-6 shadow-xl flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+                        <!-- Decorative Quote Icon -->
+                        <div class="absolute top-4 right-4 text-4xl text-white/5 font-serif">"</div>
+                        
+                        <p class="text-slate-300 text-xs italic leading-relaxed mb-6 flex-1 relative z-10">
+                            "<?= h($testimony['quote']) ?>"
+                        </p>
+                        
+                        <div class="flex items-center gap-3 relative z-10 border-t border-slate-700 pt-4">
+                            <div class="w-10 h-10 rounded-full bg-slate-700 bg-cover bg-center border-2 border-slate-600 shrink-0 shadow-sm" style="background-image: url('<?= asset_url('images/testimonials/' . h($testimony['image_path'])) ?>');"></div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-white text-xs leading-tight truncate"><?= h($testimony['name']) ?></h4>
+                                <p class="text-[8px] text-[#E5B822] font-black uppercase tracking-widest mt-0.5 truncate"><?= h($testimony['placement']) ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- App Exclusive Consultation Card -->
             <div class="px-6 pb-6">
@@ -179,8 +222,8 @@ $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GRO
                     <div class="absolute -right-6 -bottom-6 text-6xl text-white/10"><i class="fa-solid fa-headset"></i></div>
                     <h3 class="font-black text-lg mb-1 relative z-10">Need Guidance?</h3>
                     <p class="text-xs text-white/80 mb-4 relative z-10 max-w-[200px]">Speak to an agent immediately via our mobile hotline.</p>
-                    <a href="tel:<?= preg_replace('/[^0-9+]/', '', ORG_PHONE ?? '') ?>" class="inline-flex items-center justify-center gap-2 bg-white text-red-900 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition relative z-10">
-                        <i class="fa-solid fa-phone"></i> Call Now
+                    <a href="tel:<?= preg_replace('/[^0-9+]/', '', ORG_PHONE ?? '') ?>" class="inline-flex items-center justify-center gap-2 bg-white text-red-900 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition relative z-10 w-full md:w-auto">
+                        <i class="fa-solid fa-phone"></i> Call Admissions
                     </a>
                 </div>
             </div>
@@ -266,21 +309,21 @@ $programs = $pdo->query("SELECT * FROM class_divisions WHERE status='active' GRO
             <h3 class="text-lg font-black text-white mb-4 uppercase tracking-widest text-center">Select Language</h3>
             
             <div class="space-y-3">
-                <button @click="changeLanguage('en'); showLangModal = false;" class="w-full flex items-center justify-between bg-slate-900/50 border border-slate-700 px-6 py-4 rounded-2xl active:bg-slate-700 transition">
+                <button @click="changeLanguage('en'); showLangModal = false;" class="w-full flex items-center justify-between bg-slate-900/50 border border-slate-700 px-6 py-4 rounded-2xl active:bg-slate-700 transition shadow-sm">
                     <span class="flex items-center gap-3 font-bold text-sm text-white"><span class="text-xl">🇬🇧</span> English</span>
                     <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
                 </button>
-                <button @click="changeLanguage('ja'); showLangModal = false;" class="w-full flex items-center justify-between bg-slate-900/50 border border-slate-700 px-6 py-4 rounded-2xl active:bg-slate-700 transition font-sans">
+                <button @click="changeLanguage('ja'); showLangModal = false;" class="w-full flex items-center justify-between bg-slate-900/50 border border-slate-700 px-6 py-4 rounded-2xl active:bg-slate-700 transition font-sans shadow-sm">
                     <span class="flex items-center gap-3 font-bold text-sm text-white"><span class="text-xl">🇯🇵</span> 日本語 (JP)</span>
                     <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
                 </button>
-                <button @click="changeLanguage('my'); showLangModal = false;" class="w-full flex items-center justify-between bg-slate-900/50 border border-slate-700 px-6 py-4 rounded-2xl active:bg-slate-700 transition font-mm">
+                <button @click="changeLanguage('my'); showLangModal = false;" class="w-full flex items-center justify-between bg-slate-900/50 border border-slate-700 px-6 py-4 rounded-2xl active:bg-slate-700 transition font-mm shadow-sm">
                     <span class="flex items-center gap-3 font-bold text-sm text-white"><span class="text-xl">🇲🇲</span> မြန်မာ (MM)</span>
                     <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
                 </button>
             </div>
             
-            <button @click="showLangModal = false" class="w-full mt-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition">Cancel</button>
+            <button @click="showLangModal = false" class="w-full mt-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition active:opacity-50">Cancel</button>
         </div>
     </div>
 
