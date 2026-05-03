@@ -1,9 +1,10 @@
 <?php 
 // pages/landing.php
-// Main Entry Point for Sheindana.edu
+// Main Entry Point for Shinedana.com
 
 require_once '../config/db.php'; 
 require_once '../config/functions.php';
+require_once '../config/settings.php'; // FIX: Required to prevent 500 errors on ORG_PHONE/ORG_EMAIL
 
 // 1. Safe Database Fetching (Crash-Proof Architecture)
 $branches = [];
@@ -12,10 +13,8 @@ $featured_schools = [];
 $testimonials = [];
 
 try {
-    // Fetch all branches safely and filter in PHP to avoid 'is_active' vs 'status' SQL column errors
     $stmt_branches = $pdo->query("SELECT * FROM branches");
     $raw_branches = $stmt_branches->fetchAll();
-    
     $branches = array_filter($raw_branches, function($b) {
         if (isset($b['is_active'])) return $b['is_active'] == 1;
         if (isset($b['status'])) return $b['status'] === 'active';
@@ -26,12 +25,18 @@ try {
 }
 
 try {
-    // Fetch top 3 featured schools for the landing page showcase
+    $stmt_programs = $pdo->query("
+        SELECT class_name, MAX(academic_year) as academic_year, MAX(shift) as shift, MAX(description) as description, MAX(duration_text) as duration_text, MAX(icon) as icon
+        FROM class_divisions WHERE status = 'active' GROUP BY class_name
+    ");
+    $programs = $stmt_programs->fetchAll();
+} catch (PDOException $e) { 
+    error_log("Programs query failed: " . $e->getMessage()); 
+}
+
+try {
     $stmt_schools = $pdo->query("
-        SELECT id, school_name, region, type, city 
-        FROM japan_schools 
-        ORDER BY created_at DESC 
-        LIMIT 3
+        SELECT id, school_name, region, type, city FROM japan_schools ORDER BY created_at DESC LIMIT 3
     ");
     $featured_schools = $stmt_schools->fetchAll();
 } catch (PDOException $e) {
@@ -39,14 +44,12 @@ try {
 }
 
 try {
-    // Fetch top 3 dynamic testimonials for the Success Stories block
     $stmt_testi = $pdo->query("SELECT * FROM testimonials ORDER BY created_at DESC LIMIT 3");
     $testimonials = $stmt_testi->fetchAll();
 } catch (PDOException $e) {
     error_log("Testimonials query failed: " . $e->getMessage());
 }
 
-// Include Header (brings in our --brand-gold and --brand-red variables)
 require_once '../includes/header.php';
 ?>
 
@@ -64,7 +67,6 @@ require_once '../includes/header.php';
     }
 </style>
 
-<!-- Hero Section -->
 <section class="bg-slate-900 min-h-[90vh] flex items-center relative px-4 sm:px-6 lg:px-12 overflow-hidden py-24 md:py-32">
     <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(var(--brand-gold) 1px, transparent 1px); background-size: 40px 40px;"></div>
     <div class="absolute top-[-10%] right-[-5%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-[--brand-red] rounded-full blur-[120px] md:blur-[180px] opacity-20 pointer-events-none mix-blend-screen"></div>
@@ -78,7 +80,7 @@ require_once '../includes/header.php';
                     <span class="w-2 h-2 rounded-full bg-[--brand-red] animate-pulse"></span> Licensed Agency
                 </span>
                 <div class="h-4 w-px bg-white/20"></div>
-                <span class="text-white/80 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Myanmar <i class="fa-solid fa-arrow-right mx-1 text-[--brand-red]"></i> Global</span>
+                <span class="text-white/80 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Myanmar <i class="fa-solid fa-arrow-right mx-1 text-[--brand-red]"></i>  </span>
             </div>
             
             <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] font-black text-white leading-[1.1] md:leading-[0.95] tracking-tighter">
@@ -143,10 +145,8 @@ require_once '../includes/header.php';
     </div>
 </section>
 
-<!-- About Summary Section (NEW) -->
 <section id="about" class="py-16 md:py-24 px-4 sm:px-6 max-w-[1600px] mx-auto relative scroll-mt-32">
     <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-        <!-- Left Side: Image / Graphics -->
         <div class="relative order-2 lg:order-1">
             <div class="absolute -top-10 -left-10 w-64 h-64 bg-[--brand-gold] rounded-full blur-[80px] opacity-20 hidden md:block"></div>
             <div class="absolute -bottom-10 -right-10 w-64 h-64 bg-[--brand-red] rounded-full blur-[80px] opacity-10 hidden md:block"></div>
@@ -155,7 +155,7 @@ require_once '../includes/header.php';
                 <div class="space-y-4">
                     <div class="bg-white rounded-[32px] p-6 shadow-xl border border-slate-100 transform hover:-translate-y-2 transition-transform duration-300">
                         <i class="fa-solid fa-earth-americas text-4xl text-[--brand-gold] mb-4"></i>
-                        <h4 class="font-black text-slate-900 text-lg mb-1">Global Reach</h4>
+                        <h4 class="font-black text-slate-900 text-lg mb-1">  Reach</h4>
                         <p class="text-xs font-bold text-slate-500">Japan, UAE, Singapore, Malaysia & More.</p>
                     </div>
                     <div class="bg-slate-900 rounded-[32px] p-6 shadow-xl transform translate-x-4 md:translate-x-8 hover:-translate-y-2 transition-transform duration-300">
@@ -172,14 +172,13 @@ require_once '../includes/header.php';
             </div>
         </div>
 
-        <!-- Right Side: Text Content -->
         <div class="order-1 lg:order-2">
             <span class="text-[9px] md:text-[10px] font-black uppercase text-[--brand-red] tracking-[0.2em] mb-2 md:mb-3 flex items-center gap-2">
                 <div class="w-6 md:w-8 h-px bg-[--brand-red]"></div> Who We Are
             </span>
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-6">
                 株式会社シャインダナー <br>
-                <span class="text-slate-400 font-light italic">Shinedana Co., Ltd.</span>
+                <span class="text-slate-400 font-light italic"><?= h(ORG_NAME ?? 'Shinedana Co., Ltd.') ?></span>
             </h2>
             
             <p class="text-sm md:text-base text-slate-600 font-medium leading-relaxed mb-6">
@@ -196,7 +195,6 @@ require_once '../includes/header.php';
     </div>
 </section>
 
-<!-- Academic Programs -->
 <section id="programs" class="py-16 md:py-24 px-4 sm:px-6 max-w-[1600px] mx-auto relative scroll-mt-32">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16 gap-4 md:gap-6">
         <div>
@@ -229,7 +227,7 @@ require_once '../includes/header.php';
                     </h3>
                     
                     <p class="relative z-10 text-xs md:text-sm text-slate-500 mb-4 md:mb-8 leading-relaxed flex-grow">
-                        <?= h($program['description'] ?? 'Comprehensive syllabus designed for maximum retention and JLPT success. Tailored for ambitious students.') ?>
+                        <?= h($program['description'] ?? 'Comprehensive syllabus designed for maximum retention.') ?>
                     </p>
                     
                     <div class="relative z-10 text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest pt-3 md:pt-5 border-t border-slate-100 flex justify-between items-center">
@@ -248,7 +246,6 @@ require_once '../includes/header.php';
     <?php endif; ?>
 </section>
 
-<!-- Pacific Finder Teaser & School Showcase -->
 <section class="py-16 md:py-24 bg-slate-900 text-white px-4 sm:px-6 relative overflow-hidden">
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[100px] sm:text-[200px] md:text-[400px] font-black text-white pointer-events-none select-none opacity-[0.03] italic">SHN</div>
 
@@ -304,11 +301,42 @@ require_once '../includes/header.php';
     </div>
 </section>
 
-<!-- Contact / Enquiry Form -->
+<section class="py-16 md:py-24 px-4 sm:px-6 relative overflow-hidden bg-slate-900 border-t border-slate-800">
+    <div class="max-w-[1600px] mx-auto relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16 gap-4 md:gap-6">
+            <div>
+                <span class="text-[9px] md:text-[10px] font-black uppercase text-[--brand-gold] tracking-[0.2em] mb-2 md:mb-3 block">Alumni Network</span>
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">WALL OF <span class="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-gold] to-yellow-200 italic">EXCELLENCE</span></h2>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 md:gap-8">
+            <?php foreach($testimonials as $testimony): ?>
+            <div class="bg-white/5 border border-white/10 p-6 md:p-8 rounded-[32px] backdrop-blur-sm hover:-translate-y-2 transition-transform duration-300 group">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-14 h-14 rounded-full bg-slate-700 bg-cover bg-center border-2 border-white/10 shadow-inner group-hover:border-[--brand-gold] transition-colors shrink-0" style="background-image: url('<?= asset_url('images/testimonials/' . h($testimony['image_path'])) ?>');"></div>
+                    <div>
+                        <h4 class="text-white font-bold text-lg leading-tight"><?= h($testimony['name']) ?></h4>
+                        <p class="text-[10px] text-[--brand-gold] uppercase font-black tracking-widest mt-1"><?= h($testimony['placement']) ?></p>
+                    </div>
+                </div>
+                <p class="text-slate-400 text-sm italic leading-relaxed font-medium">"<?= h($testimony['quote']) ?>"</p>
+            </div>
+            <?php endforeach; ?>
+            
+            <?php if(empty($testimonials)): ?>
+                <div class="col-span-3 text-center py-12 border border-dashed border-white/10 rounded-[32px]">
+                    <i class="fa-regular fa-comment-dots text-4xl text-slate-500 mb-3"></i>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Alumni success stories will be updated shortly.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
 <section id="enquiry" class="py-16 md:py-24 bg-slate-50 px-4 sm:px-6 scroll-mt-32">
     <div class="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
         
-        <!-- Left: Info & Trust signals -->
         <div>
             <span class="text-[9px] md:text-[10px] font-black uppercase text-[--brand-red] tracking-[0.2em] mb-2 md:mb-3 flex items-center gap-2">
                 <div class="w-6 md:w-8 h-px bg-[--brand-red]"></div> Admissions Team
@@ -322,45 +350,44 @@ require_once '../includes/header.php';
             </p>
             
             <div class="space-y-3 md:space-y-4">
-                <a href="tel:<?= preg_replace('/[^0-9+]/', '', ORG_PHONE ?? '') ?>" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-red] focus:outline-none focus:ring-2 focus:ring-[--brand-red] transition cursor-pointer active:scale-[0.98] group">
+                <a href="tel:<?= preg_replace('/[^0-9+]/', '', defined('ORG_PHONE') ? ORG_PHONE : '') ?>" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-red] focus:outline-none focus:ring-2 focus:ring-[--brand-red] transition cursor-pointer active:scale-[0.98] group">
                     <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-slate-50 flex items-center justify-center text-[--brand-red] text-base md:text-xl shrink-0 border border-slate-100 group-hover:bg-[--brand-red] group-hover:text-white transition">
                         <i class="fa-solid fa-phone"></i>
                     </div>
                     <div>
-                    <span class="text-[10px] font-black uppercase text-[--brand-gold] tracking-[0.2em] mb-3 block">Alumni Network</span>
-                    <h2 class="text-3xl md:text-5xl font-black text-white italic">WALL OF <span class="text-transparent bg-clip-text bg-gradient-to-r from-[--brand-gold] to-yellow-200">EXCELLENCE</span></h2>
-                </div>
-                <button class="text-white border border-white/20 px-6 py-3 rounded-full text-xs font-bold uppercase hover:bg-white hover:text-slate-900 transition w-full md:w-auto">View All 500+ Alumni</button>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <?php foreach($testimonials as $testimony): ?>
-                <div class="bg-white/5 border border-white/10 p-8 rounded-[32px] backdrop-blur-sm hover:-translate-y-2 transition-transform duration-300 group">
-                    <div class="flex items-center gap-4 mb-6">
-                        <!-- Dynamic Image fetched from our public assets folder -->
-                        <div class="w-14 h-14 rounded-full bg-slate-700 bg-cover bg-center border-2 border-white/10 shadow-inner group-hover:border-[--brand-gold] transition-colors" style="background-image: url('<?= asset_url('images/testimonials/' . h($testimony['image_path'])) ?>');"></div>
-                        <div>
-                            <h4 class="text-white font-bold text-lg leading-tight"><?= h($testimony['name']) ?></h4>
-                            <p class="text-[10px] text-[--brand-gold] uppercase font-black tracking-widest mt-1"><?= h($testimony['placement']) ?></p>
-                        </div>
+                        <div class="text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5 md:mb-1">Direct Helpline</div>
+                        <div class="text-sm md:text-xl font-bold text-slate-900"><?= defined('ORG_PHONE') ? h(ORG_PHONE) : 'Contact Us' ?></div>
                     </div>
-                    <p class="text-slate-400 text-sm italic leading-relaxed font-medium">"<?= h($testimony['quote']) ?>"</p>
-                </div>
-                <?php endforeach; ?>
+                </a>
                 
-                <?php if(empty($testimonials)): ?>
-                    <div class="col-span-3 text-center py-12 border border-dashed border-white/10 rounded-[32px]">
-                        <i class="fa-regular fa-comment-dots text-4xl text-slate-500 mb-3"></i>
-                        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Alumni success stories will be updated shortly.</p>
+                <a href="mailto:<?= defined('ORG_EMAIL') ? h(ORG_EMAIL) : 'info@shinedana.com' ?>" class="flex items-center gap-3 md:gap-6 p-3 md:p-6 rounded-xl md:rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-[--brand-gold] focus:outline-none focus:ring-2 focus:ring-[--brand-gold] transition cursor-pointer active:scale-[0.98] group">
+                    <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-slate-50 flex items-center justify-center text-[--brand-gold] text-base md:text-xl shrink-0 border border-slate-100 group-hover:bg-[--brand-gold] group-hover:text-white transition">
+                        <i class="fa-solid fa-envelope"></i>
                     </div>
-                <?php endif; ?>
+                    <div class="overflow-hidden">
+                        <div class="text-[8px] md:text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5 md:mb-1">Email Support</div>
+                        <div class="text-xs md:text-lg font-bold text-slate-900 truncate"><?= defined('ORG_EMAIL') ? h(ORG_EMAIL) : 'info@shinedana.com' ?></div>
+                    </div>
+                </a>
             </div>
         </div>
-    </section>
-
-    <!-- UPCOMING EVENTS -->
+            
+        <div class="bg-white rounded-[24px] md:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden border border-slate-100 mt-4 md:mt-0">
+            <div class="absolute top-0 right-0 w-32 h-32 md:w-64 md:h-64 bg-[--brand-gold] rounded-full blur-[60px] md:blur-[120px] opacity-10 pointer-events-none"></div>
+            
+            <h3 class="text-lg md:text-2xl font-black text-slate-900 mb-4 md:mb-8 flex items-center gap-2 md:gap-3 relative z-10">
+                <i class="fa-regular fa-paper-plane text-[--brand-red]"></i> Request a Consultation
+            </h3>
+            
+            <?php if(isset($_GET['msg'])): ?>
+                <div class="bg-green-50 border border-green-200 text-green-700 p-3 md:p-4 rounded-lg md:rounded-2xl text-[9px] md:text-xs font-bold mb-4 md:mb-6 flex items-center gap-2 shadow-sm animate-pulse">
+                    <i class="fa-solid fa-circle-check text-sm md:text-lg"></i> <?= h($_GET['msg']) ?>
                 </div>
-                
+            <?php endif; ?>
+            <?php if(isset($_GET['error'])): ?>
+                <div class="bg-red-50 border border-red-200 text-red-700 p-3 md:p-4 rounded-lg md:rounded-2xl text-[9px] md:text-xs font-bold mb-4 md:mb-6 flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-sm md:text-lg"></i> <?= h($_GET['error']) ?>
+                </div>
             <?php endif; ?>
 
             <form action="<?= route('pages/save_enquiry') ?>" method="POST" class="space-y-3 md:space-y-5 relative z-10">
