@@ -1,12 +1,25 @@
 {
-  "name": "Sheindana   Education",
-  "short_name": "Sheindana",
-  "description": "Myanmar's premier Japanese education and overseas employment ecosystem.",
+  "id": "/?source=pwa",
+  "name": "Shinedana Global Education",
+  "short_name": "Shinedana",
+  "description": "Myanmar's premier Japanese education and overseas employment ecosystem. မြန်မာနိုင်ငံ၏  ဂျပန်ပညာရေးနှင့် ပြည်ပအလုပ်အကိုင် ဝန်ဆောင်မှု။ ミャンマーのトップクラスの日本語教育と海外就労エコシステム。",
   "start_url": "/index.php?route=pages/mobile_app",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "minimal-ui",
+    "standalone"
+  ],
   "background_color": "#0f172a",
   "theme_color": "#D92128",
   "orientation": "portrait-primary",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "business",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "assets/images/icon-192.png",
@@ -19,6 +32,36 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pacific Finder",
+      "short_name": "Finder",
+      "description": "Search Japanese Partner Schools",
+      "url": "/index.php?route=pages/mobile_app",
+      "icons": [
+        {
+          "src": "assets/images/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "Agent Portal",
+      "short_name": "Portal",
+      "description": "Secure Login for Agents and Staff",
+      "url": "/index.php?route=auth/login",
+      "icons": [
+        {
+          "src": "assets/images/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
     }
   ]
 }
