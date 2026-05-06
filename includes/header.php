@@ -13,7 +13,7 @@ if ($isLoggedIn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title><?= h(APP_NAME ?? 'Shinedana') ?> | <?= h(APP_TAGLINE ?? '  Education Ecosystem') ?></title>
+    <title><?= defined('APP_NAME') ? h(APP_NAME) : 'Shinedana' ?> | <?= defined('APP_TAGLINE') ? h(APP_TAGLINE) : 'Global Education Ecosystem' ?></title>
     
     <!-- PWA & Mobile App Meta Tags -->
     <link rel="manifest" href="<?= base_url('manifest.json') ?>">
@@ -84,14 +84,14 @@ if ($isLoggedIn) {
 
     <!-- Fixed Header Wrapper -->
     <header class="fixed w-full z-50 transition-all duration-300 flex flex-col"
-            :class="scrolled ? 'shadow-xl' : 'shadow-sm'">
+            :class="scrolled && !mobileMenuOpen ? 'shadow-xl' : 'shadow-sm'">
         
         <!-- Corporate Micro-Header (Top Bar) -->
         <div class="bg-slate-900 text-white/80 py-1.5 px-4 sm:px-6 lg:px-12 text-[9px] md:text-[10px] font-bold uppercase tracking-widest hidden md:flex justify-between items-center z-50 relative transition-all duration-300"
              :class="scrolled ? 'h-0 opacity-0 overflow-hidden py-0' : 'h-auto opacity-100'">
             <div class="flex gap-4 md:gap-6">
-                <a href="tel:<?= preg_replace('/[^0-9+]/', '', ORG_PHONE ?? '') ?>" class="hover:text-white transition flex items-center group"><i class="fa-solid fa-phone text-[--brand-gold] mr-1.5 group-hover:scale-110 transition-transform"></i> <?= h(ORG_PHONE ?? 'Contact Us') ?></a>
-                <a href="mailto:info@shinedana.com" class="hover:text-white transition flex items-center group"><i class="fa-solid fa-envelope text-[--brand-red] mr-1.5 group-hover:scale-110 transition-transform"></i> info@shinedana.com</a>
+                <a href="tel:<?= preg_replace('/[^0-9+]/', '', defined('ORG_PHONE') ? ORG_PHONE : '') ?>" class="hover:text-white transition flex items-center group"><i class="fa-solid fa-phone text-[--brand-gold] mr-1.5 group-hover:scale-110 transition-transform"></i> <?= defined('ORG_PHONE') ? h(ORG_PHONE) : 'Contact Us' ?></a>
+                <a href="mailto:<?= defined('ORG_EMAIL') ? h(ORG_EMAIL) : 'info@shinedana.com' ?>" class="hover:text-white transition flex items-center group"><i class="fa-solid fa-envelope text-[--brand-red] mr-1.5 group-hover:scale-110 transition-transform"></i> <?= defined('ORG_EMAIL') ? h(ORG_EMAIL) : 'info@shinedana.com' ?></a>
             </div>
             <div class="flex gap-4 items-center">
                 <a href="<?= route('pages/about') ?>" class="hover:text-[--brand-gold] transition flex items-center gap-1.5">
@@ -104,24 +104,24 @@ if ($isLoggedIn) {
             </div>
         </div>
 
-        <!-- Main   Navigation -->
-        <nav class="border-b border-slate-100 w-full z-40 relative transition-all duration-300"
-             :class="scrolled ? 'bg-white/95 backdrop-blur-xl py-2 md:py-3' : 'bg-white/90 backdrop-blur-md py-3 md:py-4'">
+        <!-- Main Global Navigation -->
+        <nav class="border-b w-full z-40 relative transition-all duration-300"
+             :class="mobileMenuOpen ? 'bg-slate-900 border-white/10' : (scrolled ? 'bg-white/95 backdrop-blur-xl py-2 md:py-3 border-slate-100' : 'bg-white/90 backdrop-blur-md py-3 md:py-4 border-slate-100')">
             <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 flex justify-between items-center">
                 
                 <!-- Brand Logo -->
                 <a href="<?= base_url() ?>" class="flex items-center gap-2.5 sm:gap-3 group z-50 shrink-0">
-                    <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[--brand-gold] flex items-center justify-center shadow-lg group-hover:-rotate-12 transition-transform relative overflow-hidden border-2 border-white shrink-0">
+                    <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[--brand-gold] flex items-center justify-center shadow-lg group-hover:-rotate-12 transition-transform relative overflow-hidden border-2" :class="mobileMenuOpen ? 'border-slate-800' : 'border-white'">
                         <img src="<?= asset_url('images/shine_logo.png') ?>" alt="SHN" class="w-full h-full object-cover relative z-10" onerror="this.style.display='none'">
                         <!-- Fallback if image fails -->
                         <span class="absolute inset-0 flex items-center justify-center text-[--brand-red] font-black text-xs sm:text-sm italic tracking-tighter" style="z-index: 1;">SHN</span>
                     </div>
-                    <div class="leading-tight shrink-0">
-                        <span class="block font-black uppercase text-slate-900 tracking-tight text-base sm:text-lg group-hover:text-[--brand-red] transition-colors">
+                    <div class="leading-tight shrink-0 transition-colors duration-300" :class="mobileMenuOpen ? 'text-white' : 'text-slate-900'">
+                        <span class="block font-black uppercase tracking-tight text-base sm:text-lg group-hover:text-[--brand-red] transition-colors">
                             Shinedana<span class="text-[--brand-gold]">.com</span>
                         </span>
-                        <span class="block text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">
-                            <?= h(APP_TAGLINE ?? 'Education Ecosystem') ?>
+                        <span class="block text-[8px] sm:text-[9px] font-bold uppercase tracking-widest hidden sm:block" :class="mobileMenuOpen ? 'text-slate-400' : 'text-slate-500'">
+                            <?= defined('APP_TAGLINE') ? h(APP_TAGLINE) : 'Education Ecosystem' ?>
                         </span>
                     </div>
                 </a>
@@ -212,14 +212,16 @@ if ($isLoggedIn) {
                         <?php endif; ?>
                     </a>
 
-                    <!-- Mobile/Tablet Hamburger -->
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-slate-900 focus:outline-none w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-full transition-colors active:scale-95 border border-slate-200 shadow-sm">
-                        <i :class="mobileMenuOpen ? 'fa-solid fa-xmark text-[--brand-red] text-xl' : 'fa-solid fa-bars-staggered text-lg'"></i>
+                    <!-- Mobile/Tablet Hamburger (Dynamic styling for Dark overlay) -->
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                            :class="mobileMenuOpen ? 'bg-white/10 text-white border-white/20' : 'bg-slate-50 text-slate-900 border-slate-200 hover:bg-slate-100'"
+                            class="lg:hidden focus:outline-none w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full transition-colors active:scale-95 border shadow-sm z-50 relative">
+                        <i :class="mobileMenuOpen ? 'fa-solid fa-xmark text-[--brand-gold] text-xl' : 'fa-solid fa-bars-staggered text-lg'"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Mobile Drawer (Full screen height offset for mobile scroll) -->
+            <!-- PREMIUM MOBILE DRAWER (Circuit Chaos / Dark Mode) -->
             <div x-show="mobileMenuOpen" x-cloak 
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 -translate-y-4"
@@ -227,61 +229,82 @@ if ($isLoggedIn) {
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100 translate-y-0"
                  x-transition:leave-end="opacity-0 -translate-y-4"
-                 class="absolute top-full left-0 w-full bg-white/95 backdrop-blur-3xl border-b border-slate-100 shadow-2xl lg:hidden h-[calc(100vh-64px)] overflow-y-auto pb-24">
-                <div class="flex flex-col px-4 sm:px-6 py-6 space-y-5">
+                 class="absolute top-full left-0 w-full bg-slate-900/95 backdrop-blur-3xl border-b border-white/10 shadow-2xl lg:hidden h-[calc(100vh-64px)] overflow-y-auto pb-24">
+                
+                <div class="flex flex-col px-4 sm:px-6 py-6 space-y-6">
                     
-                    <!-- Dynamic Install PWA Button (Mobile Drawer) -->
-                    <button x-show="deferredPrompt" x-cloak
-                            @click="deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice => { if(choice.outcome === 'accepted') { deferredPrompt = null; mobileMenuOpen = false; } })"
-                            class="w-full bg-[--brand-gold] text-slate-900 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(229,184,34,0.3)] flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                        <i class="fa-solid fa-cloud-arrow-down"></i> Install Native App
-                    </button>
-
-                    <div class="space-y-2">
-                        <a href="<?= route('pages/about') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-base sm:text-lg font-black uppercase tracking-widest text-slate-900 border border-slate-100 bg-white p-4 rounded-2xl hover:border-[--brand-gold] transition active:scale-[0.98]">
-                            <span class="flex items-center gap-3"><i class="fa-solid fa-building text-[--brand-red]"></i> About Us</span> <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                        </a>
-                        <a href="<?= base_url('index.php?route=pages/landing#programs') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-base sm:text-lg font-black uppercase tracking-widest text-slate-900 border border-slate-100 bg-white p-4 rounded-2xl hover:border-[--brand-gold] transition active:scale-[0.98]">
-                            <span class="flex items-center gap-3"><i class="fa-solid fa-graduation-cap text-[--brand-red]"></i> Programs</span> <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                        </a>
-                        <a href="<?= base_url('index.php?route=pages/landing#branches') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-base sm:text-lg font-black uppercase tracking-widest text-slate-900 border border-slate-100 bg-white p-4 rounded-2xl hover:border-[--brand-gold] transition active:scale-[0.98]">
-                            <span class="flex items-center gap-3"><i class="fa-solid fa-map-location-dot text-[--brand-red]"></i> Network</span> <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                        </a>
-                        <a href="<?= route('pages/schools') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-base sm:text-lg font-black uppercase tracking-widest text-slate-900 border border-slate-100 bg-white p-4 rounded-2xl hover:border-[--brand-gold] transition active:scale-[0.98]">
-                            <span class="flex items-center gap-3"><i class="fa-solid fa-database text-[--brand-red]"></i> Pacific DB</span> <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                        </a>
-                    </div>
-                    
-                    <!-- Mobile Language Switcher (Prominent for 425px) -->
-                    <div class="pt-2">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Select Language</p>
-                        <div class="grid grid-cols-3 gap-2 sm:gap-3">
-                            <button onclick="changeLanguage('en'); mobileMenuOpen=false;" class="flex flex-col items-center justify-center gap-2 bg-slate-50 border border-slate-200 p-3 sm:p-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-[--brand-gold] hover:bg-white transition shadow-sm active:scale-95">
-                                <span class="text-xl sm:text-2xl drop-shadow-sm">🇬🇧</span> EN
-                            </button>
-                            <button onclick="changeLanguage('ja'); mobileMenuOpen=false;" class="flex flex-col items-center justify-center gap-2 bg-slate-50 border border-slate-200 p-3 sm:p-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-[--brand-gold] hover:bg-white transition shadow-sm active:scale-95">
-                                <span class="text-xl sm:text-2xl drop-shadow-sm">🇯🇵</span> JP
-                            </button>
-                            <button onclick="changeLanguage('my'); mobileMenuOpen=false;" class="flex flex-col items-center justify-center gap-2 bg-slate-50 border border-slate-200 p-3 sm:p-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-[--brand-gold] hover:bg-white transition font-mm shadow-sm active:scale-95">
-                                <span class="text-xl sm:text-2xl drop-shadow-sm">🇲🇲</span> MM
+                    <!-- PREMIUM APP INSTALL BANNER -->
+                    <div x-show="deferredPrompt" x-cloak class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl p-5 border border-slate-700 shadow-2xl relative overflow-hidden">
+                        <div class="absolute -right-8 -top-8 w-24 h-24 bg-[--brand-gold] rounded-full blur-[30px] opacity-20 pointer-events-none"></div>
+                        <div class="flex items-center gap-4 relative z-10">
+                            <div class="w-12 h-12 bg-white rounded-xl p-1.5 shrink-0 shadow-inner flex items-center justify-center border-2 border-[--brand-gold]">
+                                <img src="<?= asset_url('images/shine_logo.png') ?>" class="w-full h-full object-contain" onerror="this.style.display='none'">
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-black text-white text-sm">Sheindana App</h4>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Faster • Offline • Secure</p>
+                            </div>
+                            <button @click="deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice => { if(choice.outcome === 'accepted') { deferredPrompt = null; mobileMenuOpen = false; } })"
+                                    class="bg-[--brand-gold] text-slate-900 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(229,184,34,0.4)] active:scale-95 transition-transform shrink-0">
+                                Install
                             </button>
                         </div>
                     </div>
 
-                    <!-- Mobile Login -->
-                    <div class="pt-4 border-t border-slate-100 mt-4">
-                        <a href="<?= $dashboardLink ?>" class="bg-slate-900 text-white w-full py-4 sm:py-5 rounded-2xl text-sm font-black uppercase shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-transform">
-                            <?php if($isLoggedIn): ?>
-                                <i class="fa-solid fa-gauge-high text-[--brand-gold]"></i> Enter Console
-                            <?php else: ?>
-                                <i class="fa-solid fa-lock text-[--brand-gold]"></i> Access Secure Portal
-                            <?php endif; ?>
+                    <!-- QUICK ACTION GRID -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <a href="tel:<?= preg_replace('/[^0-9+]/', '', defined('ORG_PHONE') ? ORG_PHONE : '') ?>" class="flex flex-col items-center justify-center gap-2 bg-white/5 border border-white/10 p-3 rounded-2xl active:bg-white/10 transition">
+                            <i class="fa-solid fa-phone text-[--brand-gold] text-lg"></i>
+                            <span class="text-[9px] font-black text-white uppercase tracking-widest">Call</span>
+                        </a>
+                        <a href="mailto:<?= defined('ORG_EMAIL') ? h(ORG_EMAIL) : 'info@shinedana.com' ?>" class="flex flex-col items-center justify-center gap-2 bg-white/5 border border-white/10 p-3 rounded-2xl active:bg-white/10 transition">
+                            <i class="fa-solid fa-envelope text-[--brand-red] text-lg"></i>
+                            <span class="text-[9px] font-black text-white uppercase tracking-widest">Email</span>
+                        </a>
+                        <a href="<?= route('pages/about') ?>" @click="mobileMenuOpen = false" class="flex flex-col items-center justify-center gap-2 bg-white/5 border border-white/10 p-3 rounded-2xl active:bg-white/10 transition">
+                            <i class="fa-regular fa-building text-blue-400 text-lg"></i>
+                            <span class="text-[9px] font-black text-white uppercase tracking-widest">Profile</span>
+                        </a>
+                    </div>
+
+                    <!-- NAVIGATION MENU -->
+                    <div class="space-y-2 bg-white/5 p-2 rounded-[24px] border border-white/10">
+                        <a href="<?= base_url('index.php?route=pages/landing#programs') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-sm font-black uppercase tracking-widest text-white p-4 rounded-2xl active:bg-white/10 transition">
+                            <span class="flex items-center gap-3"><i class="fa-solid fa-graduation-cap text-[--brand-red]"></i> Programs</span> <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+                        </a>
+                        <a href="<?= base_url('index.php?route=pages/landing#branches') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-sm font-black uppercase tracking-widest text-white p-4 rounded-2xl active:bg-white/10 transition">
+                            <span class="flex items-center gap-3"><i class="fa-solid fa-map-location-dot text-[--brand-red]"></i> Network</span> <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+                        </a>
+                        <a href="<?= route('pages/schools') ?>" @click="mobileMenuOpen = false" class="flex justify-between items-center text-sm font-black uppercase tracking-widest text-white p-4 rounded-2xl active:bg-white/10 transition">
+                            <span class="flex items-center gap-3"><i class="fa-solid fa-database text-[--brand-red]"></i> Pacific DB</span> <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
                         </a>
                     </div>
                     
-                    <!-- Mobile Contact Info -->
-                    <div class="pt-4 text-center md:hidden">
-                        <a href="mailto:info@shinedana.com" class="text-[10px] font-bold text-slate-400 hover:text-[--brand-red] transition"><i class="fa-solid fa-envelope mr-1"></i> info@shinedana.com</a>
+                    <!-- LANGUAGE SWITCHER -->
+                    <div class="pt-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Select Language</p>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="changeLanguage('en'); mobileMenuOpen=false;" class="flex flex-col items-center justify-center gap-2 bg-white/5 border border-white/10 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white active:bg-[--brand-gold] active:text-slate-900 transition shadow-sm">
+                                <span class="text-2xl drop-shadow-sm">🇬🇧</span> EN
+                            </button>
+                            <button onclick="changeLanguage('ja'); mobileMenuOpen=false;" class="flex flex-col items-center justify-center gap-2 bg-white/5 border border-white/10 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white active:bg-[--brand-gold] active:text-slate-900 transition font-sans shadow-sm">
+                                <span class="text-2xl drop-shadow-sm">🇯🇵</span> JP
+                            </button>
+                            <button onclick="changeLanguage('my'); mobileMenuOpen=false;" class="flex flex-col items-center justify-center gap-2 bg-white/5 border border-white/10 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white active:bg-[--brand-gold] active:text-slate-900 transition font-mm shadow-sm">
+                                <span class="text-2xl drop-shadow-sm">🇲🇲</span> MM
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SECURE PORTAL LOGIN -->
+                    <div class="pt-4 border-t border-white/10 mt-4">
+                        <a href="<?= $dashboardLink ?>" class="bg-[--brand-gold] text-slate-900 w-full py-4 sm:py-5 rounded-2xl text-sm font-black uppercase shadow-[0_0_20px_rgba(229,184,34,0.3)] flex items-center justify-center gap-3 active:scale-[0.98] transition-transform">
+                            <?php if($isLoggedIn): ?>
+                                <i class="fa-solid fa-gauge-high text-slate-900"></i> Enter Console
+                            <?php else: ?>
+                                <i class="fa-solid fa-lock text-slate-900"></i> Access Secure Portal
+                            <?php endif; ?>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -335,7 +358,7 @@ if ($isLoggedIn) {
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-    <!-- PWA Service Worker Registration -->
+    <!-- Service Worker Registration for PWA -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
